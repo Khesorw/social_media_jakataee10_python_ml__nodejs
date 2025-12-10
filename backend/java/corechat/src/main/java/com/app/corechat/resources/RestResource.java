@@ -16,22 +16,12 @@ package com.app.corechat.resources;
 
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @Path("hello")
-public class RestResource {
-    
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public HelloRecord hello() {
-        return new HelloRecord("Hello from Jakarta EE");
-    }
-    
+public class RestResource {   
 
     @GET
-    @Path("hel")
     public Response hel() {
         return Response.ok("Hello from Response").build();
     }
