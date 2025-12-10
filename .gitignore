@@ -1,0 +1,73 @@
+# Maven target directory
+target/
+
+# Maven wrapper files (optional)
+.mvn/
+mvnw
+mvnw.cmd
+
+# Java IDE files
+*.class
+*.log
+*.ctxt
+
+# IntelliJ IDEA
+.idea/
+*.iml
+out/
+
+# VS Code
+.vscode/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Docker related
+# local volumes and data
+backend/dev-db/pgdata/
+backend/dev-db/deployments/*
+
+# Do NOT ignore the deployments folder itself, only its contents
+# except keep an empty .gitkeep
+backend/java/deployments/*
+!backend/java/deployments/.gitkeep
+
+# Logs
+*.log
+logs/
+docker.log
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# Python (for ML folder, future)
+__pycache__/
+*.pyc
+
+# NodeJS (future frontend)
+node_modules/
+npm-debug.log
+dist/
+build/
+
+# Environment variables
+.env
+*.local
+
