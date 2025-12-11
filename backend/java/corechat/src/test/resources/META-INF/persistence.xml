@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence" version="3.0">
+    <persistence-unit name="MyPu" transaction-type="RESOURCE_LOCAL">
+
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+
+        <class>com.app.corechat.entities.TestUser</class>
+
+        <properties>
+
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1" />
+            <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver" />
+            <property name="jakarta.persistence.jdbc.user" value="sa" />
+            <property name="jakarta.persistence.jdbc.password" value="" />
+
+            <!-- CREATE TABLE AUTOMATICALLY -->
+            <property name="eclipselink.ddl-generation" value="create-tables"/>
+
+            <!-- Fix H2 identity column -->
+            <property name="eclipselink.orm.sql.add-identity-generated" value="true"/>
+
+            <property name="eclipselink.logging.level" value="FINE" />
+
+        </properties>
+
+    </persistence-unit>
+</persistence>

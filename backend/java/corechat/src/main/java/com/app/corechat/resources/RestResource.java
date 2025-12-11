@@ -16,13 +16,12 @@ package com.app.corechat.resources;
 
 import com.app.corechat.entities.TestUser;
 
-import jakarta.ws.rs.Produces;
 import jakarta.persistence.EntityManager;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.Produces;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import jakarta.ws.rs.core.Response;
 
 @Path("hello")
 public class RestResource {   
@@ -39,7 +38,16 @@ public class RestResource {
     @GET
     @Produces(APPLICATION_JSON)
     public Response test() {
-        return Response.ok(em.createQuery("select t from TestUser t order by t.email asc", TestUser.class).getResultList()).build();
+        return Response
+                .ok(em.createQuery("select t from TestUser t order by t.email asc", TestUser.class).getResultList())
+                .build();
+
+    }
     
+    @Path("wok")
+    @GET
+    public Response wok() {
+
+        return Response.ok("Testting autodeploy").build();
     }
 }
