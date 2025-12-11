@@ -1,7 +1,15 @@
 package com.app.corechat.entities;
 
-import jakarta.persistence.*;
+
+
 import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 
 @Entity
@@ -19,6 +27,17 @@ public class TestUser {
     
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    
+    public TestUser() {
+    }
+
+    public TestUser(LocalDateTime createdAt, String email, long id, String username) {
+        this.createdAt = createdAt;
+        this.email = email;
+        this.id = id;
+        this.username = username;
+    }
 
     public long getId() {
         return id;
@@ -53,6 +72,10 @@ public class TestUser {
     }
 
 
+    @jakarta.persistence.PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
     
 
     

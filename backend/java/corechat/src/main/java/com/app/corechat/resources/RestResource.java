@@ -14,15 +14,32 @@
  ********************************************************************************/
 package com.app.corechat.resources;
 
+import com.app.corechat.entities.TestUser;
+
+import jakarta.ws.rs.Produces;
+import jakarta.persistence.EntityManager;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.MediaType;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Path("hello")
 public class RestResource {   
 
+    
+    @jakarta.persistence.PersistenceContext(unitName = "MyPU")
+    private EntityManager em;
     @GET
     public Response hel() {
         return Response.ok("Hello from Response").build();
+    }
+
+    @Path("test")
+    @GET
+    @Produces(APPLICATION_JSON)
+    public Response test() {
+        return Response.ok(em.createQuery("select t from TestUser t order by t.email asc", TestUser.class).getResultList()).build();
+    
     }
 }
