@@ -1,3 +1,4 @@
+
 create table if not exists user_info(
 
 	id bigint generated always as identity primary key,
@@ -10,14 +11,13 @@ create table if not exists user_info(
 
 create table if not exists post(
 id bigint generated always as identity primary key,
-	
 	user_id bigint not null,
 	content_post text null,
 	post_type varchar(20) not null,
 	created_at timestamptz default NOW(),
 	updated_at timestamptz, 
 	constraint check_media_type check (post_type in ('text', 'image', 'video')),
-	constraint fk_user_id foreign key (user_id) references user_info(id)
+	constraint fk_user_id foreign key (user_id) references user_info(id) on delete cascade
 );
 
 
@@ -28,7 +28,8 @@ id bigint generated always as identity primary key,
 	media_type text not null,
 	width int, 
 	height int,
-	duration int
+	duration int, 
+	constraint fk_post_media foreign key (post_id) references post(id) on delete cascade
 	
 
 );
@@ -52,22 +53,26 @@ id bigint generated always as identity primary key,
 create table if not exists participant_conversation(
  conversation_id bigint not null,
  user_id bigint not null,
-	constraint fk_conv foreign key (conversation_id) references conversation(id),
-	constraint fk_user foreign key (user_id) references user_info(id),
+	constraint fk_conv foreign key (conversation_id) references conversation(id) on delete cascade,
+	constraint fk_user foreign key (user_id) references user_info(id) on delete cascade,
 	 primary key (conversation_id, user_id)
 
 );
 
 create table if not exists messages(
-id bigint generated always as identity,
+id bigint generated always as identity primary key,
 	message_txt text not null,
 	created_at timestamptz default NOW(),
 	conversation_id bigint not null,
 	sender_id bigint not null,
-	constraint fk_conv_id foreign key (conversation_id) references conversation(id),
-	constraint fk_sender foreign key (sender_id) references user_info(id)
+	constraint fk_conv_id foreign key (conversation_id) references conversation(id) on delete cascade,
+	constraint fk_sender foreign key (sender_id) references user_info(id) on delete cascade,
+	constraint sender_must_be foreign key (conversation_id, sender_id) references participant_conversation(conversation_id,user_id)
+	on delete cascade
 	
 );
+
+
 
 
 
