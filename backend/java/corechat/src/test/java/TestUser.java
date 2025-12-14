@@ -25,6 +25,7 @@ public class TestUser {
     @Test
     public void testQuery() {
         var list = em.createQuery("select t from TestUser t", TestUser.class).getResultList();
+        list.forEach(System.out::println);
         Assertions.assertNotNull(list);
     }
 

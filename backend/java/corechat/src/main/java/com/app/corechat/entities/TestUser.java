@@ -79,6 +79,14 @@ public class TestUser {
     }
     
 
+    @Override
+    public String toString() {
+        return "TestUser{id=" + id +
+            ", email='" + email + '\'' +
+            ", username='" + username + '\'' +
+            ", createdAt=" + createdAt + '}';
+    }
+
     
 
 }

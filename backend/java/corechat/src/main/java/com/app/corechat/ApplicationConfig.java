@@ -17,7 +17,7 @@ package com.app.corechat;
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
 
-@ApplicationPath("core")
+@ApplicationPath("")
 public class ApplicationConfig extends Application {
     
 }
