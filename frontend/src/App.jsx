@@ -1,12 +1,12 @@
 
-import './App.css'
 
+import './index.css';
 function App() {
 
 
   return (
     <>
-      <p>Hello world from vite</p>
+      <p className='text-bold text-center text-3xl co'>Hello world from vite</p>
     </>
   )
 }
