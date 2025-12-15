@@ -1,3 +1,126 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+.bubble-logo {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  position: relative;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(255, 255, 255, 0.6),
+    rgba(255, 255, 255, 0.15) 40%,
+    rgba(255, 255, 255, 0.05) 60%
+  );
+  backdrop-filter: blur(6px);
+  box-shadow:
+    0 0 25px rgba(255, 255, 255, 0.35),
+    inset 0 0 25px rgba(255, 255, 255, 0.4);
+}
+
+/* Iridescent ring */
+.bubble-logo::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    #ff9a9e,
+    #fad0c4,
+    #fbc2eb,
+    #a6c1ee,
+    #84fab0,
+    #8fd3f4,
+    #fccb90,
+    #ff9a9e
+  );
+  filter: blur(2px);
+  opacity: 0.9;
+}
+
+/* Shine highlight */
+.bubble-logo::after {
+  content: "";
+  position: absolute;
+  top: 18px;
+  left: 22px;
+  width: 40px;
+  height: 25px;
+  background: rgba(255, 255, 255, 0.45);
+  border-radius: 50%;
+  filter: blur(6px);
+}
+
+.bubble-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: white;
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.8),
+    0 0 20px rgba(255, 255, 255, 0.6);
+}
+
+.register-glow-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 14px 0;
+  border-radius: 9999px;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(
+    90deg,
+    #7cffcb,
+    #74f2ce,
+    #5ee7df,
+    #b490ff
+  );
+  box-shadow:
+    0 0 20px rgba(116, 242, 206, 0.8),
+    0 0 40px rgba(116, 242, 206, 0.6),
+    0 0 60px rgba(180, 144, 255, 0.4);
+  animation: radioactivePulse 2.5s infinite;
+}
+
+/* Glow wave */
+.register-glow-btn::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    rgba(180, 255, 220, 0.6),
+    transparent 70%
+  );
+  filter: blur(12px);
+  opacity: 0.9;
+}
+
+@keyframes radioactivePulse {
+  0% {
+    box-shadow:
+      0 0 20px rgba(116, 242, 206, 0.8),
+      0 0 40px rgba(116, 242, 206, 0.6),
+      0 0 60px rgba(180, 144, 255, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(116, 242, 206, 1),
+      0 0 60px rgba(116, 242, 206, 0.9),
+      0 0 90px rgba(180, 144, 255, 0.7);
+  }
+  100% {
+    box-shadow:
+      0 0 20px rgba(116, 242, 206, 0.8),
+      0 0 40px rgba(116, 242, 206, 0.6),
+      0 0 60px rgba(180, 144, 255, 0.4);
+  }
+}

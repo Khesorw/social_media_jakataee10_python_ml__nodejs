@@ -1,14 +1,24 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import Feed from "./pages/Feed";
+import Chat from "./pages/Chat";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Welcome from "./pages/Welcome";
 
-import './index.css';
 function App() {
-
-
   return (
-    <>
-      <p className='text-bold text-center text-3xl co'>Hello world from vite</p>
-    </>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Welcome />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/feed" element={<Feed />} />
+        <Route path="/chat/:id" element={<Chat />} />
+      </Routes>
+    </BrowserRouter>
+
+  );
 }
 
-export default App
+export default App;
