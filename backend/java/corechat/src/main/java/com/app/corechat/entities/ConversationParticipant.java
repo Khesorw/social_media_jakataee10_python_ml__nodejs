@@ -8,7 +8,7 @@ public class ConversationParticipant {
     
 
     @Id
-    @ManyToMany(optional=false)
+    @ManyToOne(optional=false)
     @JoinColumn(name="conversation_id")
     private Conversation conversation;
 
