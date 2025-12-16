@@ -30,7 +30,7 @@ public class PostMedia {
     private String mediaType;
 
     private Integer width;
-    private Integer Height;
+    private Integer height;
     private Integer duration;
 
 
@@ -39,8 +39,8 @@ public class PostMedia {
     }
     
     
-    public PostMedia(Integer Height, Integer duration, Long id, String mediaType, String mediaUrl, Post post, Integer width) {
-        this.Height = Height;
+    public PostMedia(Integer height, Integer duration, Long id, String mediaType, String mediaUrl, Post post, Integer width) {
+        this.height = height;
         this.duration = duration;
         this.id = id;
         this.mediaType = mediaType;
@@ -89,12 +89,12 @@ public class PostMedia {
         this.width = width;
     }
 
-    public Integer getHeight() {
-        return Height;
+    public Integer getheight() {
+        return height;
     }
 
-    public void setHeight(Integer Height) {
-        this.Height = Height;
+    public void setheight(Integer height) {
+        this.height = height;
     }
 
     public Integer getDuration() {

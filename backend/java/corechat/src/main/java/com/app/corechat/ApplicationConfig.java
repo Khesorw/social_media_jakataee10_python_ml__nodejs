@@ -14,10 +14,21 @@
  ********************************************************************************/
 package com.app.corechat;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
+import jakarta.security.enterprise.identitystore.Pbkdf2PasswordHash;
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
 
-@ApplicationPath("")
+
+
+@ApplicationScoped
+@DatabaseIdentityStoreDefinition(
+    dataSourceLookup = "java:comp/env/jdbc/myappdb",
+    callerQuery = "SELECT user_pass FROM user_info WHERE email = ?",
+    hashAlgorithm = Pbkdf2PasswordHash.class
+)
+@ApplicationPath("core")
 public class ApplicationConfig extends Application {
     
 }

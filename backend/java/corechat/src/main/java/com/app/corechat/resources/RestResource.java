@@ -16,17 +16,23 @@ package com.app.corechat.resources;
 
 import com.app.corechat.entities.TestUser;
 
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import jakarta.security.enterprise.identitystore.PasswordHash;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import jakarta.ws.rs.core.Response;
 
 @Path("hello")
-public class RestResource {   
+public class RestResource {
 
-    
+    @Inject
+    private PasswordHash passwordHash;
+
     @jakarta.persistence.PersistenceContext(unitName = "MyPU")
     private EntityManager em;
     @GET
@@ -50,4 +56,20 @@ public class RestResource {
 
         return Response.ok("Testting autodeploy").build();
     }
+
+
+
+    @Path("genhash")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String hash(@QueryParam("p") String password) {
+        
+        if (password == null || password.isBlank())
+            return "provide ?p=yourpassword";
+        
+
+        return passwordHash.generate(password.toCharArray());
+    }
+
+
 }
