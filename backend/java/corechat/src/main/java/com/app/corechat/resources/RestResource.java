@@ -63,13 +63,18 @@ public class RestResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String hash(@QueryParam("p") String password) {
-        
+
         if (password == null || password.isBlank())
             return "provide ?p=yourpassword";
-        
 
         return passwordHash.generate(password.toCharArray());
     }
+
+
+    
+    
+
+
 
 
 }

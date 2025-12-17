@@ -1,11 +1,17 @@
 import { useState } from "react";
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
+
+
   const [form, setForm] = useState({
     email: "",
     password: "",
     remember: false,
   });
+
+  const navigate = useNavigate();
 
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
@@ -36,6 +42,25 @@ export default function Login() {
     if (!validate()) return;
 
     setLoading(true);
+
+    axios
+      .post('http://localhost:8080/corechat/core/validate', {
+        email: form.email,
+        password: form.password
+      })
+      .then((response) => {
+        if (response.data.success === true) {
+          console.log("authentication successful");
+
+          navigate('/feed');
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(() => {
+        setLoading(false);
+    })
 
     // 👉 YOU will do:
     // - call Jakarta EE backend

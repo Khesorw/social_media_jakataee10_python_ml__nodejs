@@ -23,6 +23,9 @@ import jakarta.ws.rs.core.Application;
 
 
 @ApplicationScoped
+/*for authentication we store identities in our postgres database
+  as of now we only authenticate user with the callerQuery and Pbkdf2 hash algorightms once we have completed pahse 3 and 4
+  group/roles will be added as well for authorization purposes  */
 @DatabaseIdentityStoreDefinition(
     dataSourceLookup = "java:comp/env/jdbc/myappdb",
     callerQuery = "SELECT user_pass FROM user_info WHERE email = ?",
