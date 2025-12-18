@@ -1,5 +1,6 @@
 package com.app.corechat.config;
 
+
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
@@ -20,4 +21,3 @@ public class CorsFilter implements ContainerResponseFilter {
                 "GET, POST, PUT, DELETE, OPTIONS, HEAD");
     }
 }
-

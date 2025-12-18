@@ -64,15 +64,33 @@ public class Login {
             response,
                 AuthenticationParameters.withParams().credential(credentials));
 
-        
-        if (status == AuthenticationStatus.SUCCESS) {
-            return Response.ok()
-                    .entity("{\"message\": \"Authenticated\"}")
-                    .build();
+
+        switch (status) {
+            
+            case SUCCESS:
+                return Response.ok().build();
+            
+            case SEND_FAILURE:
+                return Response.status(Response.Status.UNAUTHORIZED).build();
+
+            case NOT_DONE:
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            
+            default:
+                return Response.serverError().build();
+            
+            
         }
 
-        //if failed
-        return Response.status(Response.Status.UNAUTHORIZED).entity("{\"message\": \"Invalid email or passwrod\"}").build();
+        
+        // if (status == AuthenticationStatus.SUCCESS) {
+        //     return Response.ok()
+        //             .entity("{\"message\": \"Authenticated\"}")
+        //             .build();
+        // }
+
+        // //if failed
+        // return Response.status(Response.Status.UNAUTHORIZED).entity("{\"message\": \"Invalid email or passwrod\"}").build();
                 
                                 
 
@@ -80,8 +98,10 @@ public class Login {
 
 
     @OPTIONS
-    public Response preflight() {
+    public Response prefligh() {
         return Response.ok().build();
     }
+
+   
 
 }

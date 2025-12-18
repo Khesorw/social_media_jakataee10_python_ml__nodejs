@@ -32,11 +32,12 @@ public class CustomAuthenticationMechanism implements HttpAuthenticationMechanis
                 context.notifyContainerAboutLogin(result);
                 return AuthenticationStatus.SUCCESS;
                 
-            }//if()
+            } //if()
 
+             return AuthenticationStatus.SEND_FAILURE;
         }//if()
 
-        return AuthenticationStatus.SEND_FAILURE;
+        return AuthenticationStatus.NOT_DONE;
 
 
         
