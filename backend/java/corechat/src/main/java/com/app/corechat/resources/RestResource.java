@@ -54,7 +54,7 @@ public class RestResource {
     @GET
     public Response wok() {
 
-        return Response.ok("Testting autodeploy").build();
+        return Response.ok("hello from wok").build();
     }
 
 
