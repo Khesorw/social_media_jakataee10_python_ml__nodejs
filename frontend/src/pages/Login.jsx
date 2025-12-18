@@ -16,6 +16,7 @@ export default function Login() {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState(null);
 
   const validate = () => {
     const newErrors = {};
@@ -36,6 +37,40 @@ export default function Login() {
     return Object.keys(newErrors).length === 0;
   };
 
+
+  const postLogin = async () => {
+    const url = "http://localhost:8080/corechat/core/login";
+    const credentials = {
+      "email": form.email,
+      "password": form.password
+    }
+    
+
+    try {
+
+      console.log(credentials.email + " from credentails " + credentials.password);
+      const response = await axios.post(url, credentials, {
+        withCredentials: true,
+      });
+
+      if (response.status == 200) {
+        setServerError(null);
+        navigate("/feed");
+        
+      }
+
+    } catch (error) {
+
+      if (error.response?.status === 401) {
+        console.log("login failed " + error.response.status);
+        setServerError("invalid email or password");
+      }
+      console.log("error in  the request ", error.message);
+      setServerError("Server error or network error")
+    }
+
+  }//postLogin()
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -43,29 +78,11 @@ export default function Login() {
 
     setLoading(true);
 
-    axios
-      .post('http://localhost:8080/corechat/core/validate', {
-        email: form.email,
-        password: form.password
-      })
-      .then((response) => {
-        if (response.data.success === true) {
-          console.log("authentication successful");
 
-          navigate('/feed');
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      })
-      .finally(() => {
-        setLoading(false);
-    })
+    console.log("user email is: " + form.email + " and passord is" + form.password);
 
-    // 👉 YOU will do:
-    // - call Jakarta EE backend
-    // - check user exists
-    // - redirect to dashboard
+    postLogin();
+ 
     setTimeout(() => {
       setLoading(false);
       console.log(form);
@@ -172,6 +189,7 @@ export default function Login() {
         </form>
 
 
+        {serverError && <p className="text-sm text-red-600 mt-4">{serverError}</p>}
       </div>
     </div>
   );

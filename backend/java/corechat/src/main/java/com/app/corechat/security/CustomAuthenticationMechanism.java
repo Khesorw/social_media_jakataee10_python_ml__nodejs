@@ -36,7 +36,7 @@ public class CustomAuthenticationMechanism implements HttpAuthenticationMechanis
 
         }//if()
 
-        return context.doNothing();
+        return AuthenticationStatus.SEND_FAILURE;
 
 
         
