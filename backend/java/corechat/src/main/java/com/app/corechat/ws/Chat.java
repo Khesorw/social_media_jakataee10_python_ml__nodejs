@@ -29,9 +29,10 @@ public class Chat {
 
 
     @OnOpen
-    public void OnOpen(Session session, ServerEndpointConfig config)  {
+    public void OnOpen(Session session) {
 
-        Principal principal = (Principal) config.getUserProperties().get("principal");
+        LOG.info("Khesrow says Incomming HTTP handshake on open ");
+        Principal principal = (Principal) session.getUserProperties().get("principal");
 
         if (principal == null) {
             try{
@@ -79,13 +80,34 @@ public class Chat {
             HandshakeRequest request,
             HandshakeResponse response
         ) {
+
+
+            LOG.info("KHESROW SAYS WS HANDSHAKE STARTED");
+
+            LOG.info("Bingo Headers are: " + request.getHeaders());
+
+            Object httpSession = request.getHttpSession();
+
+            LOG.info("HTTP Session is: " + httpSession);
+             Principal principal = null;
+
+         try {
+            principal = request.getUserPrincipal();
+                
+        } catch (Exception e) {
+            LOG.warning("PennyWise warning failed to get principal");
+                
+        }
             
-            Principal principal = request.getUserPrincipal();
+
+
 
             
 
             if (principal != null) {
-                LOG.info("principle was not null "+principal.getName());
+                LOG.info("principle was not null " + principal.getName());
+          
+                
                 config.getUserProperties().put("principal", principal);
             } else {
                 LOG.warning("No prinicpal found during handshake");

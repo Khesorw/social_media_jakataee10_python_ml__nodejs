@@ -28,7 +28,9 @@ export default function Chat() {
     var ws;
 
     try {
+      console.log("before Connection");
       ws = new WebSocket("ws://localhost:8080/corechat/chat");
+      console.log("after connection");
     } catch (error) {
       console.log("Error happened while trying to establish connection");
     }
@@ -48,8 +50,10 @@ export default function Chat() {
       };
 
       return () => {
-        ws.close();
-      }
+        if (ws) {
+          ws.close();
+        }
+      };
     }
 
   },[chatId]);
