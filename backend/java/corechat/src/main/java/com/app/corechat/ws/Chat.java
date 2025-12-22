@@ -29,9 +29,9 @@ public class Chat {
 
 
     @OnOpen
-    public void OnOpen(Session session)  {
+    public void OnOpen(Session session, ServerEndpointConfig config)  {
 
-        Principal principal = (Principal) session.getUserProperties().get("principal");
+        Principal principal = (Principal) config.getUserProperties().get("principal");
 
         if (principal == null) {
             try{
@@ -63,13 +63,11 @@ public class Chat {
     @OnClose
     public void OnClose(Session session) {
 
-        try {
+        
             
-            session.close();
+            LOG.info("Session Closed " + session.getId());
 
-        } catch (IOException e) {
-        }
-
+       
     }
     
 
@@ -84,8 +82,13 @@ public class Chat {
             
             Principal principal = request.getUserPrincipal();
 
+            
+
             if (principal != null) {
+                LOG.info("principle was not null "+principal.getName());
                 config.getUserProperties().put("principal", principal);
+            } else {
+                LOG.warning("No prinicpal found during handshake");
             }
 
 

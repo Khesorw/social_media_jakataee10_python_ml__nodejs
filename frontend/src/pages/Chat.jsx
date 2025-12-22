@@ -1,29 +1,60 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const mockMessages = [
   {
     id: 1,
-    sender: "other",
-    text: "Hey!",
+    sender: "me",
+    text: "Hi Diana!",
   },
   {
     id: 2,
-    sender: "me",
-    text: "Hi 👋",
-  },
-  {
-    id: 3,
     sender: "other",
-    text: "How are you?",
+    text: "Hey Charlie 👋",
   },
+
 ];
 
 export default function Chat() {
   const navigate = useNavigate();
-  const { id } = useParams(); // chatId
+  const { chatId  } = useParams(); // chatId
   const [messages, setMessages] = useState(mockMessages);
   const [newMessage, setNewMessage] = useState("");
+
+  console.log(chatId);
+
+  useEffect(() => { 
+
+    var ws;
+
+    try {
+      ws = new WebSocket("ws://localhost:8080/corechat/chat");
+    } catch (error) {
+      console.log("Error happened while trying to establish connection");
+    }
+
+    
+
+    if (ws != null) {
+      ws.onopen = () => {
+        ws.send(JSON.stringify({
+          type: "JOIN",
+          conversationId: chatId
+        }));
+      }
+
+      ws.onmessage = (event) => {
+        
+      };
+
+      return () => {
+        ws.close();
+      }
+    }
+
+  },[chatId]);
+
+  
 
   const handleSend = () => {
     if (!newMessage.trim()) return;
@@ -53,11 +84,11 @@ export default function Chat() {
         </button>
 
         <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold">
-          A
+          D
         </div>
 
         <div className="flex-1">
-          <h1 className="font-medium text-gray-900">Alice</h1>
+          <h1 className="font-medium text-gray-900">Diana</h1>
           <p className="text-xs text-gray-500">Online</p>
         </div>
 

@@ -3,24 +3,11 @@ import React from "react";
 import "../index.css";
 
 const chats = [
-  {
-    chatId: "1",
-    user: { id: "101", name: "Alice" },
-    lastMessage: "Hey, are you free today?",
-    timestamp: "14:32",
-    unreadCount: 2,
-  },
+
   {
     chatId: "2",
-    user: { id: "102", name: "Bob" },
-    lastMessage: "Let’s meet tomorrow",
-    timestamp: "13:10",
-    unreadCount: 0,
-  },
-  {
-    chatId: "3",
-    user: { id: "103", name: "Charlie" },
-    lastMessage: "👍",
+    user: { id: "3", name: "Diana" },
+    lastMessage: "",
     timestamp: "11:05",
     unreadCount: 0,
   },

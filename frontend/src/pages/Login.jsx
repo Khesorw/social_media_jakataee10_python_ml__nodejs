@@ -48,7 +48,7 @@ export default function Login() {
 
     try {
 
-      console.log(credentials.email + " from credentails " + credentials.password);
+      
       const response = await axios.post(url, credentials, {
         withCredentials: true,
       });
@@ -77,9 +77,6 @@ export default function Login() {
     if (!validate()) return;
 
     setLoading(true);
-
-
-    console.log("user email is: " + form.email + " and passord is" + form.password);
 
     postLogin();
  
