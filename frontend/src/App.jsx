@@ -8,13 +8,13 @@ import Welcome from "./pages/Welcome";
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/corechat">
       <Routes>
         <Route path="/" element={<Welcome />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/feed" element={<Feed />} />
-        <Route path="/chat/:id" element={<Chat />} />
+        <Route path="/chat/:chatId" element={<Chat />} />
       </Routes>
     </BrowserRouter>
 

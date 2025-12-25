@@ -17,32 +17,38 @@ public class CustomAuthenticationMechanism implements HttpAuthenticationMechanis
     @Inject
     private IdentityStoreHandler identityStoreHandler;
 
-
     @Override
-    public jakarta.security.enterprise.AuthenticationStatus validateRequest(HttpServletRequest request,
-                 HttpServletResponse response,
-            HttpMessageContext context) {
-                    
-        Credential credential = context.getAuthParameters().getCredential();
+    public AuthenticationStatus validateRequest(HttpServletRequest request,
+                                               HttpServletResponse response,
+                                               HttpMessageContext context) {
 
-        if (credential != null) {
-            CredentialValidationResult result = identityStoreHandler.validate(credential);
-            if (result.getStatus() == CredentialValidationResult.Status.VALID) {
+        // Check if already authenticated (from session)
+        if (context.isAuthenticationRequest()) {
+            Credential credential = context.getAuthParameters().getCredential();
 
-                context.notifyContainerAboutLogin(result);
-                return AuthenticationStatus.SUCCESS;
-                
-            } //if()
+            if (credential != null) {
+                CredentialValidationResult result = identityStoreHandler.validate(credential);
 
-             return AuthenticationStatus.SEND_FAILURE;
-        }//if()
+                if (result.getStatus() == CredentialValidationResult.Status.VALID) {
+                    // CRITICAL: Tell container to remember this authentication in session
+                    return context.notifyContainerAboutLogin(
+                        result.getCallerPrincipal(),
+                        result.getCallerGroups()
+                    );
+                }
 
+                return AuthenticationStatus.SEND_FAILURE;
+            }
+        }
+
+        // If there's a principal in session, authentication already happened
+        if (context.getCallerPrincipal() != null) {
+            return AuthenticationStatus.SUCCESS;
+        }
+
+        // No credentials and no existing authentication
         return AuthenticationStatus.NOT_DONE;
-
-
-        
-        
-
     }
-    
 }
+
+

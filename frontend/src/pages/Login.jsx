@@ -39,7 +39,7 @@ export default function Login() {
 
 
   const postLogin = async () => {
-    const url = "http://localhost:8080/corechat/core/login";
+    const url = "/corechat/core/login";
     const credentials = {
       "email": form.email,
       "password": form.password
