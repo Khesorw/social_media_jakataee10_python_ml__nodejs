@@ -31,27 +31,35 @@ public class CustomAuthenticationMechanism implements HttpAuthenticationMechanis
 
         LOG.info("Validte uri reqeusti "+request.getRequestURI());
         //for login 
-        if (context.isAuthenticationRequest()) {
+        // if (context.isAuthenticationRequest()) {
 
             Credential credentials = context.getAuthParameters().getCredential();
             if (credentials != null) {
                 CredentialValidationResult result = identityStoreHandler.validate(credentials);
 
+              
+
                 if (result.getStatus() == CredentialValidationResult.Status.VALID) {
+
+                    LOG.info("GROUP OR RESULT IS " + result.getCallerGroups());
+                    LOG.info("Validation status is " + result.getStatus());
+                    LOG.info("Principal is: "+result.getCallerPrincipal() == null ? "null" : result.getCallerPrincipal().getName());
 
                     return context.notifyContainerAboutLogin(result.getCallerPrincipal(), result.getCallerGroups());
                 }
 
                 return context.responseUnauthorized();
             }
-        }
+        // }
 
         //for authenticated user
                 
         // if (context.getCallerPrincipal() != null) {
+        //     LOG.info("USER IS ALREADY AUTHENTICATED ");
         //     return AuthenticationStatus.SUCCESS;
         // }
 
+        LOG.info("UNAUTHENTICATED USER ");
         //anonymous users
         return AuthenticationStatus.NOT_DONE;
         

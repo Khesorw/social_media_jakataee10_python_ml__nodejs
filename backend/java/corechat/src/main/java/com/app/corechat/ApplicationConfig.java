@@ -24,6 +24,7 @@ import jakarta.ws.rs.core.Application;
 
 
 
+
 @ApplicationScoped
 @DatabaseIdentityStoreDefinition(
     dataSourceLookup = "jdbc/myappdb",
