@@ -54,10 +54,9 @@ public class Login {
         LOG.info(() -> "Penny wise cookie path is :) ;) :);) "+request.getContextPath());
             
 
-        LOG.info(()->"Logging Attempt for the user "+loginRequest.getEmail());
+        LOG.info("Logging Attempt for the user "+loginRequest.getEmail());
           
-        // Credential credentials = new UsernamePasswordCredential(loginRequest.getEmail(),
-        //         new Password(loginRequest.getPassword()));
+
         UsernamePasswordCredential credentials = 
                                  new UsernamePasswordCredential(
                                                 loginRequest.getEmail(),
@@ -75,7 +74,7 @@ public class Login {
         switch (status) {
   
             case SUCCESS:
-
+            //lambda is used to supress the warning of log info()
             LOG.info(()->"Penny LOGIN WAS SUCCESSFUL now printing the session credentionals after success");
             LOG.info(() -> "Penny wise login Session created " + session.getId());
             LOG.info(() -> "Penny wise cookie path is :) ;) :);) " + request.getContextPath());
@@ -90,23 +89,8 @@ public class Login {
                 return Response.status(Response.Status.BAD_REQUEST).build();
             
             default:
-                return Response.serverError().build();
-            
-            
-        }
-
-        
-        // if (status == AuthenticationStatus.SUCCESS) {
-        //     return Response.ok()
-        //             .entity("{\"message\": \"Authenticated\"}")
-        //             .build();
-        // }
-
-        // //if failed
-        // return Response.status(Response.Status.UNAUTHORIZED).entity("{\"message\": \"Invalid email or passwrod\"}").build();
-                
-                                
-
+                return Response.serverError().build(); 
+        }//switch                         
     }//validate()
 
 
