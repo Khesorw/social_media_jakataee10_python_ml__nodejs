@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 const mockMessages = [
   {
@@ -23,40 +24,111 @@ export default function Chat() {
 
   console.log(chatId);
 
-  useEffect(() => { 
+  // useEffect(() => {
+  //   let websocket = null;
 
-    var ws;
+  //   const connect = async () => {
+  //     try {
+  //       console.log('🔐 Checking authentication via /me...');
 
+  //       const res = await axios.get('/corechat/core/me', {
+  //         withCredentials: true,
+  //       });
+
+  //       if (res.status === 200) {
+  //         console.log('✅ Authenticated as:', res.data.username);
+  //         setUsername(res.data.username);
+
+  //         console.log('🔌 Opening WebSocket connection...');
+  //         websocket = new WebSocket('ws://localhost:8080/corechat/chat');
+
+  //         websocket.onopen = () => {
+  //           console.log('✅ WebSocket connected!');
+
+  //           // Send JOIN message
+  //           const joinMsg = JSON.stringify({
+  //             type: 'JOIN',
+  //             conversationId: chatId,
+  //           });
+  //           websocket.send(joinMsg);
+  //           console.log('📤 Sent JOIN message:', joinMsg);
+  //         };
+
+  //         websocket.onmessage = (event) => {
+  //           console.log('📨 Received message:', event.data);
+  //           setMessages((prev) => [...prev, event.data]);
+  //         };
+
+  //         websocket.onclose = (event) => {
+  //           console.log('🔴 WebSocket closed:', event.code, event.reason);
+  //         };
+
+  //         websocket.onerror = (error) => {
+  //           console.error('❌ WebSocket error:', error);
+  //         };
+
+  //         setWs(websocket);
+  //       }
+  //     } catch (err) {
+  //       console.error('❌ Auth check failed:', err);
+  //       console.log('➡️ Redirecting to login...');
+  //       navigate('/login');
+  //     }
+  //   };
+
+  //   connect();
+
+  //   return () => {
+  //     if (websocket && websocket.readyState === WebSocket.OPEN) {
+  //       console.log('🔌 Closing WebSocket connection...');
+  //       websocket.close();
+  //     }
+  //   };
+  // }, [chatId, navigate]);
+
+
+  useEffect(() => {
+  let ws;
+
+  const connect = async () => {
     try {
-      console.log("before Connection");
-      ws = new WebSocket("ws://localhost:8080/corechat/chat");
-      console.log("after connection");
-    } catch (error) {
-      console.log("Error happened while trying to establish connection");
-    }
+      console.log("Checking auth via /me");
 
-    
+      const res = await axios.get("/corechat/core/me", {
+        withCredentials: true,
+      });
 
-    if (ws != null) {
-      ws.onopen = () => {
-        ws.send(JSON.stringify({
-          type: "JOIN",
-          conversationId: chatId
-        }));
+      if (res.status === 200) {
+        console.log("Auth OK → opening WebSocket response data "+res.data);
+
+        // ws = new WebSocket("ws://localhost:8080/corechat/chat");
+
+        // ws.onopen = () => {
+        //   ws.send(JSON.stringify({
+        //     type: "JOIN",
+        //     conversationId: chatId,
+        //   }));
+        // };
+
+        // ws.onmessage = (event) => {
+        //   console.log("WS message:", event.data);
+        // };
+
+        // ws.onclose = () => {
+        //   console.log("WS closed");
+        // };
       }
-
-      ws.onmessage = (event) => {
-        
-      };
-
-      return () => {
-        if (ws) {
-          ws.close();
-        }
-      };
+    } catch (err) {
+      console.error("Auth failed → redirecting to login");
+      navigate("/login");
     }
+  };
 
-  },[chatId]);
+  connect();
+
+
+}, [chatId]);
+
 
   
 
