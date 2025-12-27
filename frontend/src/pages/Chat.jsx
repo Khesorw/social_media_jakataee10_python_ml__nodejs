@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
 const mockMessages = [
@@ -24,99 +24,45 @@ export default function Chat() {
 
   console.log(chatId);
 
-  // useEffect(() => {
-  //   let websocket = null;
-
-  //   const connect = async () => {
-  //     try {
-  //       console.log('🔐 Checking authentication via /me...');
-
-  //       const res = await axios.get('/corechat/core/me', {
-  //         withCredentials: true,
-  //       });
-
-  //       if (res.status === 200) {
-  //         console.log('✅ Authenticated as:', res.data.username);
-  //         setUsername(res.data.username);
-
-  //         console.log('🔌 Opening WebSocket connection...');
-  //         websocket = new WebSocket('ws://localhost:8080/corechat/chat');
-
-  //         websocket.onopen = () => {
-  //           console.log('✅ WebSocket connected!');
-
-  //           // Send JOIN message
-  //           const joinMsg = JSON.stringify({
-  //             type: 'JOIN',
-  //             conversationId: chatId,
-  //           });
-  //           websocket.send(joinMsg);
-  //           console.log('📤 Sent JOIN message:', joinMsg);
-  //         };
-
-  //         websocket.onmessage = (event) => {
-  //           console.log('📨 Received message:', event.data);
-  //           setMessages((prev) => [...prev, event.data]);
-  //         };
-
-  //         websocket.onclose = (event) => {
-  //           console.log('🔴 WebSocket closed:', event.code, event.reason);
-  //         };
-
-  //         websocket.onerror = (error) => {
-  //           console.error('❌ WebSocket error:', error);
-  //         };
-
-  //         setWs(websocket);
-  //       }
-  //     } catch (err) {
-  //       console.error('❌ Auth check failed:', err);
-  //       console.log('➡️ Redirecting to login...');
-  //       navigate('/login');
-  //     }
-  //   };
-
-  //   connect();
-
-  //   return () => {
-  //     if (websocket && websocket.readyState === WebSocket.OPEN) {
-  //       console.log('🔌 Closing WebSocket connection...');
-  //       websocket.close();
-  //     }
-  //   };
-  // }, [chatId, navigate]);
-
+  const wsRef = useRef(null);
 
   useEffect(() => {
-  let ws;
+    let ws;
 
   const connect = async () => {
     try {
       console.log("Checking auth via /me");
-
-      const res = await axios.get("/corechat/core/me", {
-        withCredentials: true,
-      });
+      const res = await axios.get("/corechat/core/me");
 
       if (res.status === 200) {
         console.log("Auth OK → opening WebSocket response data "+res.data);
 
-        // ws = new WebSocket("ws://localhost:8080/corechat/chat");
+        ws = new WebSocket("ws://localhost:8080/corechat/chat");
+        
+        wsRef.current = ws;
 
-        // ws.onopen = () => {
-        //   ws.send(JSON.stringify({
-        //     type: "JOIN",
-        //     conversationId: chatId,
-        //   }));
-        // };
+        ws.onopen = () => {
+          console.log("ws connection opened");
+          ws.send("Hello from client");
+      
+        };
 
-        // ws.onmessage = (event) => {
-        //   console.log("WS message:", event.data);
-        // };
+        ws.onmessage = (event) => {
+          console.log("WS message:", event.data);
 
-        // ws.onclose = () => {
-        //   console.log("WS closed");
-        // };
+          setMessages(prev =>[
+            ...prev,
+            {
+              id: Date.now(),
+              sender: "other",
+              text: event.data,
+            },
+          ]);
+        };
+
+        ws.onclose = () => {
+          console.log("WS closed");
+        };
       }
     } catch (err) {
       console.error("Auth failed → redirecting to login");
@@ -124,7 +70,13 @@ export default function Chat() {
     }
   };
 
-  connect();
+    connect();
+    
+    return () => {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+    }
 
 
 }, [chatId]);
@@ -135,8 +87,12 @@ export default function Chat() {
   const handleSend = () => {
     if (!newMessage.trim()) return;
 
-    setMessages([
-      ...messages,
+  
+
+
+
+    setMessages(prev => [
+      ...prev,
       {
         id: Date.now(),
         sender: "me",
@@ -144,6 +100,8 @@ export default function Chat() {
       },
     ]);
 
+    
+    wsRef.current?.send(newMessage);
     setNewMessage("");
   };
 

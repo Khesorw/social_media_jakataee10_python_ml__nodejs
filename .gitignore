@@ -95,3 +95,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+*.html
+
+dist/

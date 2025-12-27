@@ -22,6 +22,7 @@ public class Chat {
     @OnMessage
     public void onMessage(String message, Session session) {
         LOG.info("📨 WS MESSAGE - Session: " + session.getId() + ", Message: " + message);
+        
 
         // Echo back for now
         try {
