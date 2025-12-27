@@ -31,7 +31,7 @@ public class SecureMe {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         } else {
             String username = securityContext.getCallerPrincipal().getName();
-            LOG.info("✅ /me called by authenticated user: " + username);
+            LOG.info("me called by authenticated user: " + username);
 
             return Response.ok()
                     .entity("{\"username\":\"" + username + "\"}")

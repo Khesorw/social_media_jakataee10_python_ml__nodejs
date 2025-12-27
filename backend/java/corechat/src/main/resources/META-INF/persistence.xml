@@ -7,7 +7,6 @@
 
     <persistence-unit name="MyPU" transaction-type="JTA">
 
-        <!-- Don't specify provider: GlassFish uses EclipseLink by default -->
 
         <!-- Use your GlassFish-managed datasource -->
         <jta-data-source>jdbc/myappdb</jta-data-source>
