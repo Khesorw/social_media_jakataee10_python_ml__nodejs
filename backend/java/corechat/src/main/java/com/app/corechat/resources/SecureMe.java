@@ -24,6 +24,7 @@ public class SecureMe {
     @GET
     @RolesAllowed("USER")
     public Response me() {
+        
 
         if (securityContext.getCallerPrincipal() == null) {
             LOG.info("FROM ME securityContext caller praincipal is null ");

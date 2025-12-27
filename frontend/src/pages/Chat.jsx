@@ -82,14 +82,8 @@ export default function Chat() {
 }, [chatId]);
 
 
-  
-
   const handleSend = () => {
     if (!newMessage.trim()) return;
-
-  
-
-
 
     setMessages(prev => [
       ...prev,

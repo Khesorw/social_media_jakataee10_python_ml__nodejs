@@ -1,5 +1,8 @@
 package com.app.corechat.ws;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import jakarta.websocket.OnClose;
@@ -14,26 +17,36 @@ public class Chat {
 
     private static final Logger LOG = Logger.getLogger(Chat.class.getName());
 
+    private static final Set<Session> sessions = Collections.synchronizedSet(new HashSet<>());
+
+
+
     @OnOpen
     public void onOpen(Session session) {
-        LOG.info("🔵 WS OPEN - Session ID: " + session.getId());
+        sessions.add(session);
+        LOG.info("🔵 WS OPEN - Session ID: " + session.getId()+" total sessions: "+sessions.size());
+
+
     }
 
     @OnMessage
     public void onMessage(String message, Session session) {
         LOG.info("📨 WS MESSAGE - Session: " + session.getId() + ", Message: " + message);
-        
 
-        // Echo back for now
-        try {
-            session.getBasicRemote().sendText("Server received: " + message);
-        } catch (Exception e) {
-            LOG.severe("Error sending message: " + e.getMessage());
+        synchronized(sessions){
+            
+            for (Session s : sessions){
+                if(s.isOpen()){
+                    
+                    s.getAsyncRemote().sendText(message);
+                }
+            }
         }
     }
 
     @OnClose
     public void onClose(Session session) {
+        sessions.remove(session);
         LOG.info("🔴 WS CLOSED - Session ID: " + session.getId());
     }
 
