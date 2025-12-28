@@ -15,9 +15,11 @@
 package com.app.corechat.resources;
 
 import com.app.corechat.entities.TestUser;
+import com.app.corechat.entities.User;
 
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import jakarta.security.enterprise.identitystore.PasswordHash;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -72,7 +74,23 @@ public class RestResource {
 
 
     
-    
+
+    @Path("eml")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findUserByEmail(@QueryParam("email") String email) {
+
+        if (email == null)
+            return Response.status(Response.Status.BAD_REQUEST).build();
+
+        String queryString = "SELECT u FROM User u where u.email = :email";
+
+        TypedQuery<User> query = em.createQuery(queryString, User.class);
+
+        query.setParameter("email", email);
+
+        return Response.ok(query.getResultList()).build();
+    }
 
 
 
