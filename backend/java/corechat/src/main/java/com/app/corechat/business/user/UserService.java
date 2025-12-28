@@ -22,15 +22,12 @@ public class UserService {
     public void persist(User user) {
 
         if (user.getEmail() == null || user.getUsername() == null || user.getPassword() == null) {
-        throw new IllegalArgumentException("Null values");
+                throw new IllegalArgumentException("Null values");
         }
-    
-        if (user.getEmail().isBlank() || user.getUsername().isBlank() || user.getPassword().isBlank()) {
-            throw new IllegalArgumentException("One of these attributes is blank {email, username, password}");
-        }
+        
+        
 
-    
-      
+              
         //normalization
         user.setEmail(user.getEmail().toLowerCase());
 
@@ -39,10 +36,20 @@ public class UserService {
         user.setEmail(user.getEmail().replace(" ", ""));
 
          //checks for duplicate email
-         if (userFecade.findUserByEmail(user.getEmail()).isEmpty()) {
+         if (!(userFecade.findUserByEmail(user.getEmail()).isEmpty())) {
              throw new DuplicateEmailException("Duplicate email ");
            
         }
+
+           if (user.getEmail().isBlank() || user.getUsername().isBlank() || user.getPassword().isBlank()) {
+            throw new IllegalArgumentException("One of these attributes is blank {email, username, password}");
+        }
+
+    
+     
+
+    
+
 
 
         //hashing the password
@@ -50,10 +57,7 @@ public class UserService {
         String hashedPassword = passwordHash.generate(plainPassword.toCharArray());
         user.setPassword(hashedPassword);
 
-        
 
-    
-     
         userFecade.create(user);
       
        

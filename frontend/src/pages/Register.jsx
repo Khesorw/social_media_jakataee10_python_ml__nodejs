@@ -1,26 +1,26 @@
+import axios from "axios";
 import { useState } from "react";
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function Register() {
   const [form, setForm] = useState({
-    name: "",
-    lname: "",
+    username: "",
     email: "",
     password: "",
   });
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState(null);
+  const navigate = useNavigate();
 
   const validate = () => {
     const newErrors = {};
 
-    if (!form.name.trim()) {
+    if (!form.username.trim()) {
       newErrors.name = "Name is required";
     }
 
-     if (!form.lname.trim()) {
-      newErrors.lname = "Last Name is required";
-    }
 
     if (!form.email) {
       newErrors.email = "Email is required";
@@ -34,26 +34,50 @@ export default function Register() {
       newErrors.password = "Password must be at least 6 characters";
     }
 
-
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const postRegister = async () => {
+    const url = "/corechat/core/signup";
+    const user = {
+      username: form.username,
+      email: form.email,
+      password: form.password
+    };
+
+    try {
+      console.log("Sending user data:", user);
+      setLoading(true);
+      setServerError(null); // Clear previous errors
+
+      const response = await axios.post(url, user);
+
+      if (response.status === 201) {
+        console.log("User created successfully");
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+
+      // Better error handling
+      if (error.response) {
+        setServerError(error.response.data.message || "Registration failed");
+      } else if (error.request) {
+        setServerError("Network error - please check your connection");
+      } else {
+        setServerError("Registration failed - please try again");
+      }
+    } finally {
+      setLoading(false); // Always reset loading state
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
 
-    setLoading(true);
-
-    // 👉 YOU will:
-    // POST /register (Jakarta EE)
-    // if success -> redirect to /feed
-    // if error -> show backend error
-    setTimeout(() => {
-      setLoading(false);
-      console.log(form);
-    }, 1000);
+    postRegister();
   };
 
   return (
@@ -70,49 +94,38 @@ export default function Register() {
           </p>
         </div>
 
+        {/* Server Error Message */}
+        {serverError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-sm text-red-600">{serverError}</p>
+          </div>
+        )}
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
 
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Full name
+              First name
             </label>
             <input
+              type="text"
               className={`w-full rounded-md border px-3 py-3 focus:outline-none focus:ring-2 ${
                 errors.name
                   ? "border-red-400 focus:ring-red-200"
                   : "border-gray-300 focus:ring-indigo-200"
               }`}
-              value={form.name}
+              value={form.username}
               onChange={(e) =>
-                setForm({ ...form, name: e.target.value })
+                setForm({ ...form, username: e.target.value })
               }
             />
-            {errors.name && (
-              <p className="text-xs text-red-500 mt-1">{errors.name}</p>
+            {errors.username && (
+              <p className="text-xs text-red-500 mt-1">{errors.username}</p>
             )}
           </div>
 
-          {/* Last Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-                Last name
-                </label>
-                <input className={`w-full rounded-md border px-3 py-3 focus:outline-none focus:ring-2 ${
-                    errors.lname
-                      ? "border-red-400 focus:ring-red-200" 
-                        : "border-gray-300 focus:ring-indigo-200" }`}
-                value={form.lname}
-                onChange={(e) =>
-                  setForm({ ...form, lname: e.target.value })
-                }
-              />
-              {errors.lname && (
-                <p className="text-xs text-red-500 mt-1">{errors.lname}</p>
-              )}
-                
-          </div>
 
           {/* Email */}
           <div>
@@ -158,8 +171,6 @@ export default function Register() {
             )}
           </div>
 
-
-
           {/* Submit */}
           <button
             type="submit"
@@ -177,9 +188,12 @@ export default function Register() {
         {/* Footer */}
         <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{" "}
-          <a href="/login" className="text-indigo-600 hover:underline">
-            Sign in
-          </a>
+          <Link
+            to="/login"
+            className="text-indigo-600 hover:underline"
+          >
+            Login
+          </Link>
         </p>
       </div>
     </div>

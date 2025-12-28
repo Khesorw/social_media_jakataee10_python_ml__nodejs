@@ -14,14 +14,17 @@
  ********************************************************************************/
 package com.app.corechat.resources;
 
+import com.app.corechat.business.user.UserService;
 import com.app.corechat.entities.TestUser;
 import com.app.corechat.entities.User;
 
+import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.security.enterprise.identitystore.PasswordHash;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
@@ -34,6 +37,9 @@ public class RestResource {
 
     @Inject
     private PasswordHash passwordHash;
+
+    @EJB
+    private UserService userService;
 
     @jakarta.persistence.PersistenceContext(unitName = "MyPU")
     private EntityManager em;
@@ -90,6 +96,15 @@ public class RestResource {
         query.setParameter("email", email);
 
         return Response.ok(query.getResultList()).build();
+    }
+
+
+    @Path("regist")
+    @POST
+    public Response signup(User user) {
+        userService.persist(user);
+        
+        return Response.status(Response.Status.CREATED).build();
     }
 
 
