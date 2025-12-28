@@ -26,9 +26,17 @@ public class Register {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response signup(User user) {
+        try{
         userService.persist(user);
+        LOG.info(" create user: " + user.toString());
         
-        return Response.status(Response.Status.CREATED).build();
+            return Response.status(Response.Status.CREATED).build();
+        }catch(Exception e){
+
+            LOG.warning("Unable to create user "+user.toString());
+            return Response.status(Response.Status.BAD_REQUEST).build();
+
+        }
     }
     
 }
