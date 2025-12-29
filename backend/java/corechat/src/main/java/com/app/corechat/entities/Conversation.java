@@ -22,7 +22,7 @@ public class Conversation {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="created_at")
+    @Column(name="created_at", insertable=false,updatable=false)
     private OffsetDateTime createdAt;
 
 
