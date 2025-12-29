@@ -103,8 +103,29 @@ public class RestResource {
     @POST
     public Response signup(User user) {
         userService.persist(user);
-        
+
         return Response.status(Response.Status.CREATED).build();
+    }
+    
+
+    @Path("check")
+    @GET
+    public Response isPart(@QueryParam("partId") Long partId,@QueryParam("usId") Long usId) {
+          String jpql = "SELECT COUNT(cp1) "
+            +"FROM ConversationParticipant cp1 "
+            +"WHERE cp1.user.id= :senderId AND "
+            +"cp1.conversation.id = :conversationId";
+
+
+       Long count =  em.createQuery(jpql,Long.class)
+                    .setParameter("senderId", usId)
+                    .setParameter("conversationId", partId)
+               .getSingleResult();
+
+       String c = String.valueOf(count > 0);
+                    
+       return Response.ok(c).build();
+
     }
 
 

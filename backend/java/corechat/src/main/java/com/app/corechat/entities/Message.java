@@ -24,7 +24,7 @@ public class Message {
     @Column(name="message_txt",nullable=false)
     private String messageText;
 
-    @Column(name="created_at")
+    @Column(name="created_at", insertable=false,updatable=false)
     private OffsetDateTime createdAt;
 
 
