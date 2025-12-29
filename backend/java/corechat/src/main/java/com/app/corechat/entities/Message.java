@@ -27,7 +27,6 @@ public class Message {
     @Column(name="created_at", insertable=false,updatable=false)
     private OffsetDateTime createdAt;
 
-
     @ManyToOne(optional = false)
     @JoinColumn(name="conversation_id")
     private Conversation conversation;
@@ -36,6 +35,53 @@ public class Message {
     @ManyToOne(optional=false)
     @JoinColumn(name="sender_id")
     private User sender;
+
+    public Message() {
+
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getMessageText() {
+        return messageText;
+    }
+
+    public void setMessageText(String messageText) {
+        this.messageText = messageText;
+    }
+
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Conversation getConversation() {
+        return conversation;
+    }
+
+    public void setConversation(Conversation conversation) {
+        this.conversation = conversation;
+    }
+
+    public User getSender() {
+        return sender;
+    }
+
+    public void setSender(User sender) {
+        this.sender = sender;
+    }
+
+
+    
 
 
     
