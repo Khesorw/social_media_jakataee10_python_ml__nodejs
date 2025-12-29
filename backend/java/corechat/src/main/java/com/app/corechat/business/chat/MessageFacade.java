@@ -45,10 +45,12 @@ public class MessageFacade {
     }
     
 
-    public List<Message> findMessageByText(String text) {
+    public List<Message> findMessageByText(String text, Long convid) {
         
-        return  em.createQuery("SELECT m FROM Message m WHERE m.messageText = :text")
-                .setParameter("text", text).getResultList();
+        return  em.createQuery("SELECT m FROM Message m WHERE m.messageText = :text AND m.conversation.id = :convid")
+                .setParameter("text", text)
+                .setParameter("convid", convid)
+                .getResultList();
     }
 
 
