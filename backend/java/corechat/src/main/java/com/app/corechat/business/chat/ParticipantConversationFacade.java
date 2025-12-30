@@ -34,7 +34,10 @@ public class ParticipantConversationFacade {
                 .setParameter("conversationId", conversationId)
                 .getSingleResult();
 
-        return count > 0;
+   
+        return count != null && count > 0;
+    
+
     }
     
 

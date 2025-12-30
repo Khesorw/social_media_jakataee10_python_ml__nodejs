@@ -37,7 +37,7 @@ export default function Chat() {
       if (res.status === 200) {
         console.log("Auth OK → opening WebSocket response data "+res.data);
 
-        ws = new WebSocket("ws://localhost:8080/corechat/chat");
+        ws = new WebSocket(`ws://localhost:8080/corechat/chat/${chatId}`);
         
         wsRef.current = ws;
 
