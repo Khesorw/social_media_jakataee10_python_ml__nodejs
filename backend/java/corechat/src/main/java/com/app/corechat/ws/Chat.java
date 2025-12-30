@@ -70,29 +70,22 @@ public class Chat {
         
         LOG.info("🔵 WS OPEN - Session ID: "+session.getId()+" for conversation: "+conversationId );
 
-
     }
 
     @OnMessage
     public void onMessage(String message, Session session) {
 
         Long conversationId = (Long) session.getUserProperties().get("chatId");
-
         if(conversationId == null){return;}
-
         LOG.info("📨 WS MESSAGE - Session: " + session.getId() + ", Message: " + message);
-
         Principal p = session.getUserPrincipal();
         String email = p.getName();
-
         if (email != null) {
             //persist the message
             messageService.sendMessage(conversationId, email, message);
-
         }
         
-        //broadCast message
-
+        //sends message to the participant of conversation room
         Set<Session> sessions = sessionByConvId.get(conversationId);
         if (sessions != null) {
             
