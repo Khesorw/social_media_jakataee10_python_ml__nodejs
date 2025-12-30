@@ -22,6 +22,9 @@ import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import jakarta.security.enterprise.identitystore.PasswordHash;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -110,22 +113,48 @@ public class RestResource {
 
     @Path("check")
     @GET
-    public Response isPart(@QueryParam("partId") Long partId,@QueryParam("usId") Long usId) {
-          String jpql = "SELECT COUNT(cp1) "
-            +"FROM ConversationParticipant cp1 "
-            +"WHERE cp1.user.id= :senderId AND "
-            +"cp1.conversation.id = :conversationId";
+    public Response isPart(@QueryParam("partId") Long partId, @QueryParam("usId") Long usId) {
+        String jpql = "SELECT COUNT(cp1) "
+                + "FROM ConversationParticipant cp1 "
+                + "WHERE cp1.user.id= :senderId AND "
+                + "cp1.conversation.id = :conversationId";
 
+        Long count = em.createQuery(jpql, Long.class)
+                .setParameter("senderId", usId)
+                .setParameter("conversationId", partId)
+                .getSingleResult();
 
-       Long count =  em.createQuery(jpql,Long.class)
-                    .setParameter("senderId", usId)
-                    .setParameter("conversationId", partId)
-               .getSingleResult();
+        String c = String.valueOf(count > 0);
 
-       String c = String.valueOf(count > 0);
-                    
-       return Response.ok(c).build();
+        return Response.ok(c).build();
 
+    }
+
+    
+    @Path("findid")
+    @GET
+    public Response getidbyemail(@QueryParam("eml") String eml) {
+
+          if (eml == null || eml.isBlank()) {
+            throw new IllegalArgumentException("balnk or null email ?eml=?");
+        }
+
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+
+        Root<User> user = cq.from(User.class);
+
+        cq.select(user.get("id"));
+
+        cq.where(cb.equal(user.get("email"), eml));
+
+        Long userId = em.createQuery(cq).getSingleResult();
+        
+
+        if (userId != null) {
+            return Response.ok(String.valueOf(userId)).build();
+        }
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
 
 

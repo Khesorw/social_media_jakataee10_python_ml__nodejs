@@ -58,19 +58,25 @@ public class UserFecade {
 
         Long userId = em.createQuery(cq).getSingleResult();
 
-        return userId;
+        if (userId != null) {
+            return userId;
+        }
+        return null;
     }
+    
+
+    
     
 
     public User findById(Long id) {
 
         String jpql = "SELECT u FROM User u WHERE u.id = :id";
 
-        var u = em.createQuery(jpql, User.class).setParameter("id", id).getResultList();
+        List<User> u = em.createQuery(jpql, User.class).setParameter("id", id).getResultList();
         if (u.isEmpty()) {
             return null;
         }
-        return u.getFirst();
+        return u.get(0);
     }
 
     

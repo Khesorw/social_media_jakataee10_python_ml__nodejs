@@ -24,6 +24,11 @@ public class ConversationFacade {
         em.persist(conv);
 
     }
+
+
+    public Conversation find(Long id) {
+        return em.getReference(Conversation.class, id);
+    }
     
 
     /**
@@ -31,7 +36,7 @@ public class ConversationFacade {
      * @param id
      * @return true if the conversation exist for the id that being passed as arg else wrong
      */
-    public boolean findById(Long id) {
+    public boolean doesExist(Long id) {
 
         String jpql = "SELECT COUNT(c) FROM Conversation c WHERE c.id = :id";
 

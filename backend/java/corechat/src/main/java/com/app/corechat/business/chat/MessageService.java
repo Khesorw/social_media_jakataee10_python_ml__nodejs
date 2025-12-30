@@ -7,18 +7,12 @@ import com.app.corechat.entities.User;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
-import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.PersistenceContext;
-import jakarta.security.enterprise.SecurityContext;
+
 
 @Stateless
 public class MessageService {
 
-    @PersistenceContext(unitName="MyPU")
-    @SuppressWarnings("unused")
-    private EntityManager em;
 
     @EJB
    private ConversationFacade conversationFacade;
@@ -32,8 +26,7 @@ public class MessageService {
     @EJB
     private MessageFacade messageFacade;
 
-    @Inject
-    private SecurityContext securityContext;
+
 
     
 
@@ -44,23 +37,25 @@ public class MessageService {
      * @param conversationId
      * @param txt
      */
-    public void sendMessage(Long conversationId, String txt) {
+    public void sendMessage(Long conversationId, String eml, String txt) {
         //cheap validation 
         if (conversationId == null) {
             throw new IllegalArgumentException("conversationid is null");
 
         }
         
-        String msg = checkAndValidateText(txt);
-
-        
-        //getting sender id from their email ()
-        String email = securityContext.getCallerPrincipal().getName();
+         //strip and checks if msg is not blank or null
+        String email = checkAndValidateText(eml);
+     
+        String msg = checkAndValidateText(txt); 
+    
         Long userId = userFecade.findUserIdByEmail(email);
-        
+        if (userId == null) {
+            throw new SecurityException("user is not registered or authenticated");
+        }
 
-        //validate conversation exist
-        if (!(conversationFacade.findById(conversationId))) {
+        //checks and validate that conversation exist
+        if (!(conversationFacade.doesExist(conversationId))) {
             throw new EntityNotFoundException("conversation " + conversationId + " does not exist");
         }
 
@@ -69,8 +64,9 @@ public class MessageService {
             throw new SecurityException("sender is not a participant of {" + conversationId + "} conversaiond");
         }
 
-        Conversation c = em.getReference(Conversation.class, conversationId);
-        User u = em.getReference(User.class, userId);
+        //creates new conversation and for the given convid to persist once user is set
+        Conversation c = conversationFacade.find(conversationId);
+        User u = userFecade.findById(userId);
 
 
         Message message = new Message();
@@ -80,8 +76,6 @@ public class MessageService {
 
 
         messageFacade.saveMessage(message);
-
-
     }
     
 
