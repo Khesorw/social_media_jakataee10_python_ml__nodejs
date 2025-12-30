@@ -43,7 +43,7 @@ export default function Chat() {
 
         ws.onopen = () => {
           console.log("ws connection opened");
-          ws.send("Hello from client");
+        
       
         };
 

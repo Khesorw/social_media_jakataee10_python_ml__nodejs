@@ -41,23 +41,36 @@ public class Chat {
 
 
     @OnOpen
-    public void onOpen(Session session, @PathParam("chatId") Long conversationId) {
+    public void onOpen(Session session, @PathParam("chatId") Long conversationId) throws IOException {
         
+
+        if (conversationId == null) {
+            session.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY, "null conversation id"));
+            return;
+        } //end if
+        
+        LOG.info("conversation id from onOpen: " + conversationId);
         try {
 
             Principal p = session.getUserPrincipal();
             if (p == null) {
-                session.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY, "no principal or not authenticated"));
+                try {
+                session.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY, "no principal or not authenticated"));  
+
+                } catch (IOException e) {
+                    
+                }//end try
                 return;
-            }
+            }//end if
             String email = session.getUserPrincipal().getName();
             Long userId = userFecade.findUserIdByEmail(email);
+            LOG.info("Got id "+userId+" for this principal: "+email);
             if (participantConversationFacade.isParticipant(conversationId, userId)) {
 
                 session.getUserProperties().put("chatId", conversationId);
                 //add new session
                 sessionByConvId
-                        .computeIfAbsent(conversationId, id -> ConcurrentHashMap.newKeySet()).add(session);
+                .computeIfAbsent(conversationId, k -> ConcurrentHashMap.newKeySet()).add(session);
             } else {
 
                 session.close(new CloseReason(
@@ -66,7 +79,7 @@ public class Chat {
             }
         } catch (SecurityException | IOException e) {
             e.printStackTrace();
-        }
+        }//end try
         
         LOG.info("🔵 WS OPEN - Session ID: "+session.getId()+" for conversation: "+conversationId );
 
@@ -90,7 +103,7 @@ public class Chat {
         if (sessions != null) {
             
             for (Session s : sessions) {
-                if (! s.equals(session) && s.isOpen()) {
+                if ((!s.equals(session)) && s.isOpen()) {
                     s.getAsyncRemote().sendText(message);
                 }
             }
