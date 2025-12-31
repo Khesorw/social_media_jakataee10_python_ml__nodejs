@@ -1,6 +1,7 @@
 package com.app.corechat.resources;
 import java.util.List;
 
+import com.app.corechat.api_pojos.MessageDTO;
 import com.app.corechat.business.chat.MessageService;
 import com.app.corechat.entities.Message;
 
@@ -44,7 +45,28 @@ public class ConversationResource {
         try {
             List<Message> messages = messageService.getMessages(convId, limit, offset);
 
-            return Response.ok(messages).build();
+
+        List<MessageDTO> dtoList =
+        messages.stream()
+            .map(m -> {
+                MessageDTO dto = new MessageDTO();
+                dto.id = m.getId();
+                dto.text = m.getMessageText();
+                dto.createdAt = m.getCreatedAt();
+                dto.senderId = m.getSender().getId();
+                dto.senderEmail = m.getSender().getEmail();
+                return dto;
+            })
+            .toList();
+
+        return Response.ok(dtoList).build();
+
+
+ 
+
+            
+
+            // return Response.ok(messages).build();
 
         } 
         catch (IllegalArgumentException e) {
