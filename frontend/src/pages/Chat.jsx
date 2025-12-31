@@ -2,19 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
-const mockMessages = [
-  {
-    id: 1,
-    sender: "me",
-    text: "Hi Diana!",
-  },
-  {
-    id: 2,
-    sender: "other",
-    text: "Hey Charlie 👋",
-  },
-
-];
+const mockMessages = [];
 
 export default function Chat() {
   const navigate = useNavigate();
@@ -28,6 +16,7 @@ export default function Chat() {
 
   useEffect(() => {
     let ws;
+    
 
   const connect = async () => {
     try {

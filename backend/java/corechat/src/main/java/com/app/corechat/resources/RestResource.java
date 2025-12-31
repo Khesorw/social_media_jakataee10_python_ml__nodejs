@@ -44,6 +44,7 @@ public class RestResource {
     @EJB
     private UserService userService;
 
+
     @jakarta.persistence.PersistenceContext(unitName = "MyPU")
     private EntityManager em;
     @GET
@@ -159,5 +160,6 @@ public class RestResource {
 
 
 
+  
 
 }

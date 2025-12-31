@@ -49,11 +49,9 @@ public class ParticipantConversationFacade {
         CriteriaQuery<ConversationParticipant> cq = cb.createQuery(ConversationParticipant.class);
 
         Root<ConversationParticipant> root = cq.from(ConversationParticipant.class);
+        cq.select(root);
 
         cq.where(cb.equal(root.get("user"), user));
-
-        
-        
 
         return em.createQuery(cq).getResultList();
     }

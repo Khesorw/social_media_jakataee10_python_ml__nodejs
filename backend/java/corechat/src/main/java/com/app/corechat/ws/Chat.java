@@ -69,8 +69,7 @@ public class Chat {
 
                 session.getUserProperties().put("chatId", conversationId);
                 //add new session
-                sessionByConvId
-                .computeIfAbsent(conversationId, k -> ConcurrentHashMap.newKeySet()).add(session);
+                sessionByConvId.computeIfAbsent(conversationId, k -> ConcurrentHashMap.newKeySet()).add(session);
             } else {
 
                 session.close(new CloseReason(

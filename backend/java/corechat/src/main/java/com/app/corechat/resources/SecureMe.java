@@ -2,7 +2,6 @@ package com.app.corechat.resources;
 
 import java.util.logging.Logger;
 
-import jakarta.annotation.security.DeclareRoles;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.security.enterprise.SecurityContext;
@@ -11,7 +10,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-@DeclareRoles("USER")
 @Path("me")
 @Produces(MediaType.APPLICATION_JSON)
 public class SecureMe {

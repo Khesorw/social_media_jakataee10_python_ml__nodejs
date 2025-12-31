@@ -14,6 +14,7 @@
  ********************************************************************************/
 package com.app.corechat;
 
+import jakarta.annotation.security.DeclareRoles;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
 import jakarta.ws.rs.ApplicationPath;
@@ -26,6 +27,7 @@ import jakarta.ws.rs.core.Application;
 
 
 @ApplicationScoped
+@DeclareRoles("USER")
 @DatabaseIdentityStoreDefinition(
     dataSourceLookup = "jdbc/myappdb",
     callerQuery = "SELECT user_pass FROM user_info WHERE email = ?",

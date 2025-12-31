@@ -26,6 +26,11 @@ public class ConversationFacade {
     }
 
 
+    /**
+     * 
+     * @param id
+     * @return conversation {id,created_at} for the given id if exist 
+     */
     public Conversation find(Long id) {
         return em.getReference(Conversation.class, id);
     }
@@ -44,6 +49,10 @@ public class ConversationFacade {
 
         return c > 0;
     }
+
+
+
+    
 
 
     
