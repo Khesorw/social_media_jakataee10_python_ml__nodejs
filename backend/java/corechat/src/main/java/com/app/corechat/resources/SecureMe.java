@@ -2,7 +2,11 @@ package com.app.corechat.resources;
 
 import java.util.logging.Logger;
 
+import com.app.corechat.api_pojos.MeResDTO;
+import com.app.corechat.business.user.UserFecade;
+
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
 import jakarta.security.enterprise.SecurityContext;
 import jakarta.ws.rs.GET;
@@ -18,6 +22,8 @@ public class SecureMe {
 
     @Inject
     private SecurityContext securityContext;
+        @EJB
+    private UserFecade userFecade;
 
     @GET
     @RolesAllowed("USER")
@@ -28,11 +34,33 @@ public class SecureMe {
             LOG.info("FROM ME securityContext caller praincipal is null ");
             return Response.status(Response.Status.UNAUTHORIZED).build();
         } else {
-            String username = securityContext.getCallerPrincipal().getName();
-            LOG.info("me called by authenticated user: " + username);
+
+        String username = securityContext.getCallerPrincipal().getName();
+        if (username == null) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        //gets userid form User through email
+        Long id = userFecade.findUserIdByEmail(username);
+        if (id == null) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+        LOG.info("me called by authenticated user: " + username);
+        LOG.info("me called by authenticated user: " + id);
+
+
+            
+        MeResDTO meResDTO = new MeResDTO();
+        meResDTO.id = id;
+        meResDTO.username = username;
+
+        LOG.info("me called by authenticated user: "+meResDTO.toString());
+
+
+
 
             return Response.ok()
-                    .entity("{\"username\":\"" + username + "\"}")
+                    .entity(meResDTO)
                     .build();
         }
     }

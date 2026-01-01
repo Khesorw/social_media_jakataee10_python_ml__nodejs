@@ -7,68 +7,56 @@ const mockMessages = [];
 export default function Chat() {
   const navigate = useNavigate();
   const { chatId  } = useParams(); // chatId
-  const [messages, setMessages] = useState(mockMessages);
+  const [messages, setMessages] = useState([]);
+  const [myUserId, setMyUserId] = useState(null);
   const [newMessage, setNewMessage] = useState("");
 
   console.log(chatId);
 
   const wsRef = useRef(null);
 
-  useEffect(() => {
-    let ws;
-    
 
-  const connect = async () => {
-    try {
-      console.log("Checking auth via /me");
-      const res = await axios.get("/corechat/core/me");
+useEffect(() => {
+  axios
+    .get("/corechat/core/me")
+    .then(res => setMyUserId(res.data.id))
+    .catch(() => navigate("/login"));
+}, []);
 
-      if (res.status === 200) {
-        console.log("Auth OK → opening WebSocket response data "+res.data);
 
-        ws = new WebSocket(`ws://localhost:8080/corechat/chat/${chatId}`);
-        
-        wsRef.current = ws;
+useEffect(() => {
+  if (!myUserId) return;
 
-        ws.onopen = () => {
-          console.log("ws connection opened");
-        
-      
-        };
+  axios
+    .get(`/corechat/core/conversation/${chatId}/messages`)
+    .then(res => {
+      const mapped = res.data.map(m => ({
+        id: m.id,
+        text: m.text,
+        createdAt: m.createdAt,
+        sender: m.senderId === myUserId ? "me" : "other",
+      }));
+      setMessages(mapped);
+    });
+}, [chatId, myUserId]);
 
-        ws.onmessage = (event) => {
-          console.log("WS message:", event.data);
 
-          setMessages(prev =>[
-            ...prev,
-            {
-              id: Date.now(),
-              sender: "other",
-              text: event.data,
-            },
-          ]);
-        };
+useEffect(() => {
+  if (!myUserId) return;
 
-        ws.onclose = () => {
-          console.log("WS closed");
-        };
-      }
-    } catch (err) {
-      console.error("Auth failed → redirecting to login");
-      navigate("/login");
-    }
+  const ws = new WebSocket(`ws://localhost:8080/corechat/chat/${chatId}`);
+  wsRef.current = ws;
+
+  ws.onmessage = e => {
+    setMessages(prev => [
+      ...prev,
+      { id: null, text: e.data, sender: "other" },
+    ]);
   };
 
-    connect();
-    
-    return () => {
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.close();
-      }
-    }
+  return () => ws.close();
+}, [chatId, myUserId]);
 
-
-}, [chatId]);
 
 
   const handleSend = () => {
@@ -77,7 +65,7 @@ export default function Chat() {
     setMessages(prev => [
       ...prev,
       {
-        id: Date.now(),
+        id: null,
         sender: "me",
         text: newMessage,
       },
@@ -114,9 +102,9 @@ export default function Chat() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-        {messages.map((msg) => (
+        {messages.map((msg, i) => (
           <div
-            key={msg.id}
+            key={msg.id ?? i}
             className={`flex ${
               msg.sender === "me" ? "justify-end" : "justify-start"
             }`}
