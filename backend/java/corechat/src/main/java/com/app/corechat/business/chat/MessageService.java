@@ -1,6 +1,7 @@
 package com.app.corechat.business.chat;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import com.app.corechat.business.user.UserFecade;
 import com.app.corechat.entities.Conversation;
@@ -17,6 +18,7 @@ import jakarta.security.enterprise.SecurityContext;
 @Stateless
 public class MessageService {
 
+    private static final Logger LOG = Logger.getLogger(MessageService.class.getName());
 
     @EJB
    private ConversationFacade conversationFacade;
@@ -44,7 +46,7 @@ public class MessageService {
      * @param conversationId
      * @param txt
      */
-    public void sendMessage(Long conversationId, String eml, String txt) {
+    public Message sendMessage(Long conversationId, String eml, String txt) {
 
         //cheap validation 
         if (conversationId == null) {
@@ -80,6 +82,10 @@ public class MessageService {
         message.setSender(u);
         message.setMessageText(msg);
         messageFacade.saveMessage(message);
+
+        LOG.info("Message servcie LOG After persisteing before return" +(message.toString()));        
+
+        return message;
     }
     
 

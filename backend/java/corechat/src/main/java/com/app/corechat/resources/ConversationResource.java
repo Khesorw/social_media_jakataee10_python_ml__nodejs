@@ -34,7 +34,7 @@ public class ConversationResource {
     @RolesAllowed("USER")
     public Response retriveMessages(
             @PathParam("convId") Long convId,
-            @DefaultValue("10") @QueryParam("limit") int limit,
+            @DefaultValue("50") @QueryParam("limit") int limit,
             @DefaultValue("0") @QueryParam("offset") int offset) {
         
         if (convId == null || convId == 0) {

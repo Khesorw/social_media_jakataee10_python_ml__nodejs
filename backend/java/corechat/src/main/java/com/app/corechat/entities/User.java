@@ -78,7 +78,7 @@ public class User {
     @Override
     public String toString() {
         
-        return "{ user name: " + this.getUsername() + ", Email : " + this.getEmail() + " }";
+        return "{ user name: " + this.getUsername() + ", Email : " + this.getEmail() + " "+this.getId()+" }";
     }
 
 }

@@ -41,20 +41,36 @@ useEffect(() => {
 }, [chatId, myUserId]);
 
 
-useEffect(() => {
-  if (!myUserId) return;
+  useEffect(() => {
+  
+    if (!myUserId) return;
+    
+      const ws = new WebSocket(`ws://localhost:8080/corechat/chat/${chatId}`);
+      wsRef.current = ws;
 
-  const ws = new WebSocket(`ws://localhost:8080/corechat/chat/${chatId}`);
-  wsRef.current = ws;
-
-  ws.onmessage = e => {
-    setMessages(prev => [
-      ...prev,
-      { id: null, text: e.data, sender: "other" },
-    ]);
+      ws.onmessage = e => {
+      
+        console.log("printing on message from before parsing server: ");
+        console.log(`here is my user is ${myUserId}`);
+        
+        const msg = JSON.parse(e.data);
+        console.log("printing on message from server: " + msg);
+        
+        console.log(msg)
+        setMessages(prev => [
+          ...prev,
+          {
+            id: msg.id,
+            text: msg.text,
+            sender: msg.senderId === myUserId ? "me" : "other",
+          },
+        ]);
   };
 
   return () => ws.close();
+
+
+
 }, [chatId, myUserId]);
 
 

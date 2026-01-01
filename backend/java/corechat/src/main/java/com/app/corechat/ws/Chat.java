@@ -7,11 +7,14 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import com.app.corechat.api_pojos.MessageDTO;
 import com.app.corechat.business.chat.MessageService;
 import com.app.corechat.business.chat.ParticipantConversationFacade;
 import com.app.corechat.business.user.UserFecade;
+import com.app.corechat.entities.Message;
 
 import jakarta.ejb.EJB;
+import jakarta.json.bind.JsonbBuilder;
 import jakarta.websocket.CloseReason;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnError;
@@ -92,18 +95,31 @@ public class Chat {
         LOG.info("📨 WS MESSAGE - Session: " + session.getId() + ", Message: " + message);
         Principal p = session.getUserPrincipal();
         String email = p.getName();
+        Message saved;
         if (email != null) {
             //persist the message
-            messageService.sendMessage(conversationId, email, message);
-        }
-        
+           saved = messageService.sendMessage(conversationId, email, message);
+       } else {
+           return;
+       }
+       
+       MessageDTO dto = new MessageDTO();
+       dto.id = saved.getId();
+       dto.text = saved.getMessageText();
+       dto.createdAt = saved.getCreatedAt();
+       dto.senderId = saved.getSender().getId();
+
+       String json = JsonbBuilder.create().toJson(dto);
+
+        LOG.info("MEssage to send to front end: "+json);
+
         //sends message to the participant of conversation room
         Set<Session> sessions = sessionByConvId.get(conversationId);
         if (sessions != null) {
             
             for (Session s : sessions) {
-                if ((!s.equals(session)) && s.isOpen()) {
-                    s.getAsyncRemote().sendText(message);
+                if ( s.isOpen() && (!s.equals(session))) {
+                    s.getAsyncRemote().sendText(json);
                 }
             }
         }

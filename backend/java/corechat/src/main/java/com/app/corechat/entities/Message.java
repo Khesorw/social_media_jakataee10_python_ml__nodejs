@@ -80,6 +80,12 @@ public class Message {
         this.sender = sender;
     }
 
+    @Override
+    public String toString() {
+        return "Message [id=" + id + ", messageText=" + messageText + ", createdAt=" + createdAt + ", sender=" + sender
+                + "]";
+    }
+
 
     
 
