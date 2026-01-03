@@ -18,7 +18,7 @@ import jakarta.ws.rs.core.Response;
 
 @Path("conversation/{convId}/messages")
 @jakarta.ws.rs.Produces(MediaType.APPLICATION_JSON)
-public class ConversationResource {
+public class ConversationMessageResource {
 
     @EJB
     private MessageService messageService;

@@ -2,7 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
-const mockMessages = [];
+
 
 export default function Chat() {
   const navigate = useNavigate();

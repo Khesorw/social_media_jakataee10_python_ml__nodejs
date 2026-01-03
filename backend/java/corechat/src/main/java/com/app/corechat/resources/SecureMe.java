@@ -22,7 +22,8 @@ public class SecureMe {
 
     @Inject
     private SecurityContext securityContext;
-        @EJB
+    
+    @EJB
     private UserFecade userFecade;
 
     @GET

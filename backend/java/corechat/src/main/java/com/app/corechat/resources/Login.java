@@ -38,7 +38,6 @@ public class Login {
     @Inject
     private SecurityContext securityContext;
 
-    
 
     private static final Logger LOG = Logger.getLogger(Login.class.getName());
 
@@ -78,8 +77,9 @@ public class Login {
             LOG.info(()->"Penny LOGIN WAS SUCCESSFUL now printing the session credentionals after success");
             LOG.info(() -> "Penny wise login Session created " + session.getId());
             LOG.info(() -> "Penny wise cookie path is :) ;) :);) " + request.getContextPath());
-            LOG.info(()->"Logging Attempt for the user "+loginRequest.getEmail());
-
+            LOG.info(() -> "Logging Attempt for the user " + loginRequest.getEmail());
+            
+        
                 return Response.ok().build();
             
             case SEND_FAILURE:

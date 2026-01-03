@@ -1,36 +1,107 @@
 import { useNavigate } from "react-router-dom";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "../index.css";
+import axios from "axios";
 
 const chats = [
-
   {
     chatId: "2",
     user: { id: "3", name: "Diana" },
-    lastMessage: "",
+    lastMessage: " donkey kong",
     timestamp: "11:05",
-    unreadCount: 0,
+    unreadCount: 5,
   },
 ];
 
 export default function Feed() {
-
-    console.log("Rendering Feed component");
+  const [isSearching, setIsSearching] = useState(false);
+  const [query, setQuery] = useState("");
   const navigate = useNavigate();
+  // const [chats, setChats] = useState([]);
+  const [myUserId, setMyUserId] = useState(null);
+
+
+
+
+  useEffect(() => {
+
+    const fetchUserId = async () => {
+      
+      try {
+        const res = await axios.get('/corechat/core/me');
+        console.log("printing user id "+res.data.id);
+
+        setMyUserId(res.data.id);
+
+      } catch (error) {
+        console.log(error);
+        
+        } 
+    }
+
+    fetchUserId();
+
+    return () => {
+      console.log("testing cleanup");
+    }
+      
+
+  }, []);
+
+
+  useEffect(() => {
+
+
+    
+  })
+
+
+
+
+  // This handles both the Enter key and the Search button click
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-
       {/* Header */}
       <header className="bg-white border-b px-4 py-3 flex items-center justify-between">
         <h1 className="text-lg font-semibold text-gray-900">Chats</h1>
-        <div className="flex gap-4 text-gray-600">
-          <button className="text-xl">🔍</button>
-          <button className="text-xl">➕</button>
+
+        <div className="flex items-center gap-4 text-gray-600">
+          {isSearching ? (
+            <form onSubmit={handleSubmit} className="flex items-center gap-2">
+              <input
+                autoFocus
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search user..."
+                className="border rounded-md px-2 py-1 text-sm focus:outline-indigo-500"
+              />
+              <button type="submit" className="text-sm bg-indigo-600 text-white px-2 py-1 rounded">
+                Enter
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSearching(false)}
+                className="text-xs text-gray-400"
+              >
+                Cancel
+              </button>
+            </form>
+          ) : (
+            <>
+              <button className="text-xl" onClick={() => setIsSearching(true)}>🔍</button>
+              <button className="text-xl">➕</button>
+            </>
+          )}
         </div>
       </header>
 
-      {/* Search */}
+      {/* Global Search (Optional - keeps UI consistent) */}
       <div className="p-3 bg-white border-b">
         <input
           type="text"
@@ -47,12 +118,10 @@ export default function Feed() {
             onClick={() => navigate(`/chat/${chat.chatId}`)}
             className="flex items-center gap-3 px-4 py-3 bg-white border-b cursor-pointer hover:bg-gray-100"
           >
-            {/* Avatar */}
             <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold">
               {chat.user.name.charAt(0)}
             </div>
 
-            {/* Chat Info */}
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-center">
                 <h2 className="font-medium text-gray-900 truncate">
@@ -64,10 +133,10 @@ export default function Feed() {
               </div>
               <div className="flex justify-between items-center mt-1">
                 <p className="text-sm text-gray-500 truncate">
-                  {chat.lastMessage}
+                  {chat.lastMessage || "No messages yet"}
                 </p>
                 {chat.unreadCount > 0 && (
-                  <span className="ml-2 min-w-[20px] h-5 px-1 text-xs bg-indigo-600 text-white rounded-full flex items-center justify-center">
+                  <span className="ml-2 min-w-[20px] h-5 px-1 text-xs bg-red-600 text-white rounded-full flex items-center justify-center">
                     {chat.unreadCount}
                   </span>
                 )}
