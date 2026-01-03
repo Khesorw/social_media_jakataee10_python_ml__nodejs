@@ -1,9 +1,10 @@
 package com.app.corechat.business.feed.search;
 
 import java.util.List;
+import java.util.logging.Logger;
 
+import com.app.corechat.api_pojos.UserDTO;
 import com.app.corechat.business.user.UserFecade;
-import com.app.corechat.entities.User;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -22,9 +23,14 @@ public class FeedSearchService {
     @EJB
     private UserFecade userFecade;
 
+    static Logger LOG = Logger.getLogger(FeedSearchService.class.getName());
 
-    public List<User> listUsers() {
+    public List<UserDTO> listUsers(String input) {
 
+        if (input == null || input.isBlank()) {
+            throw new IllegalArgumentException("blank query input email or null");
+
+        }
 
         String email = securityContext.getCallerPrincipal().getName();
 
@@ -38,10 +44,14 @@ public class FeedSearchService {
 
         }
         
-        List<User> users = feedSearchFacade.findUsers(email, id);
+        List<UserDTO> users = feedSearchFacade.findUsers(input, id);
 
-        
-
+        if (users.isEmpty()) {
+            LOG.warning("Empty user's list from search: ");
+        }
+        else {
+            users.forEach(each -> LOG.info("User found "+each.toString()));
+        }
         
         return users;
     }
