@@ -3,21 +3,21 @@ import React, { useEffect, useState } from "react";
 import "../index.css";
 import axios from "axios";
 
-const chats = [
-  {
-    chatId: "2",
-    user: { id: "3", name: "Diana" },
-    lastMessage: " donkey kong",
-    timestamp: "11:05",
-    unreadCount: 5,
-  },
-];
+// const chats = [
+//   {
+//     chatId: "2",
+//     user: { id: "3", name: "Diana" },
+//     lastMessage: " donkey kong",
+//     timestamp: "11:05",
+//     unreadCount: 5,
+//   },
+// ];
 
 export default function Feed() {
   const [isSearching, setIsSearching] = useState(false);
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
-  // const [chats, setChats] = useState([]);
+  const [chats, setChats] = useState([]);
   const [myUserId, setMyUserId] = useState(null);
 
 
@@ -50,11 +50,43 @@ export default function Feed() {
 
 
   useEffect(() => {
+    const feedHistory = async () => {
 
+
+      console.log("before feed history get request ");
+      const response = await axios.get('/corechat/core/feedHistory');
+      console.log("printing return from feed response: " + response.data);
+
+      if (response.status == 200) {
+        setChats(response.data)
+        
+      } else {
+        console.log("issue with response " + response.status)
+        return;
+      }
+      
+    }
+
+    feedHistory();
 
     
-  })
+  }, []);
 
+
+
+  const formateMessageDate = d => {
+    
+    if (!d) return "";
+    const date = new Date(d);
+
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+
+  };
 
 
 
@@ -114,32 +146,36 @@ export default function Feed() {
       <div className="flex-1 overflow-y-auto">
         {chats.map((chat) => (
           <div
-            key={chat.chatId}
-            onClick={() => navigate(`/chat/${chat.chatId}`)}
+            key={chat.conversationId}
+            onClick={() => navigate(`/chat/${chat.conversationId}`)}
             className="flex items-center gap-3 px-4 py-3 bg-white border-b cursor-pointer hover:bg-gray-100"
           >
             <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold">
-              {chat.user.name.charAt(0)}
+              {
+                chat.otherUserName.length > 1 ?
+                  chat.otherUserName.charAt(0) + chat.otherUserName.charAt(1) :
+                  chat.otherUserName.charAt(0)
+              }
             </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-center">
                 <h2 className="font-medium text-gray-900 truncate">
-                  {chat.user.name}
+                  {chat.otherUserName}
                 </h2>
                 <span className="text-xs text-gray-400">
-                  {chat.timestamp}
+                  {formateMessageDate(chat.createdAt)}
                 </span>
               </div>
               <div className="flex justify-between items-center mt-1">
                 <p className="text-sm text-gray-500 truncate">
-                  {chat.lastMessage || "No messages yet"}
+                  {chat.lastMessageText || "No messages yet"}
                 </p>
-                {chat.unreadCount > 0 && (
+                {/* {chat.unreadCount > 0 && (
                   <span className="ml-2 min-w-[20px] h-5 px-1 text-xs bg-red-600 text-white rounded-full flex items-center justify-center">
                     {chat.unreadCount}
                   </span>
-                )}
+                )} */}
               </div>
             </div>
           </div>
