@@ -3,15 +3,6 @@ import React, { useEffect, useState } from "react";
 import "../index.css";
 import axios from "axios";
 
-// const chats = [
-//   {
-//     chatId: "2",
-//     user: { id: "3", name: "Diana" },
-//     lastMessage: " donkey kong",
-//     timestamp: "11:05",
-//     unreadCount: 5,
-//   },
-// ];
 
 export default function Feed() {
   const [isSearching, setIsSearching] = useState(false);
@@ -93,6 +84,13 @@ export default function Feed() {
   // This handles both the Enter key and the Search button click
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    axios.get('/corechat/core/feed/search')
+      .then(response => {
+      
+    })
+
+
     if (!query.trim()) return;
   };
 
