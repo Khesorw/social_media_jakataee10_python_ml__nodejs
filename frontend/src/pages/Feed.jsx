@@ -69,9 +69,23 @@ export default function Feed() {
     setQuery("");        // Clear input
   };
 
-  const handleAddFriend = (user) => {
+
+
+  const handleAddFriend = async (user) => {
     console.log("Future logic: Add friend/Start chat with", user.id);
-    // You will implement the POST request to create a conversation here
+    try {
+      const response = await axios.post('/corechat/core/create/convroom', {
+        otherUserid: user.id
+      });
+
+      console.log("conversation room created convId is: " + response.data.convId);
+      navigate(`/chat/${response.data.conversationId}`);
+      
+    } catch (error) {
+
+      console.log("error while creating new conv " + error);
+      
+    }
   };
 
   return (

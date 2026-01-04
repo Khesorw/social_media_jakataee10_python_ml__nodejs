@@ -24,5 +24,26 @@ public class ConversationParticipant {
     @ManyToOne(optional=false)
     @JoinColumn(name="user_id")
     private User user;
+
+    public ConversationParticipant() {
+
+    }
+    
+    
+    public ConversationParticipant(Conversation conversation, User user) {
+        this.conversation = conversation;
+        this.user = user;
+    }
+
+    public Conversation getConversation() {
+        return conversation;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+
+    
     
 }

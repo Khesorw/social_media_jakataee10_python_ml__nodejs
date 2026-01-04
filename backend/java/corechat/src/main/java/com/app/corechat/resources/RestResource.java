@@ -28,6 +28,7 @@ import com.app.corechat.entities.User;
 import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -168,6 +169,48 @@ public class RestResource {
         return Response.status(Response.Status.NOT_FOUND).build();
     }
 
+
+
+
+
+    @Path("doesCon")
+    @GET
+    public Response doesConverExists() {
+
+        Long me = 8l;
+        Long other = 4l;
+        Long c=null;
+
+            try {
+            
+            String jpql = "SELECT cp.conversation.id FROM ConversationParticipant cp WHERE cp.user.id IN (:me, :other) "
+                    + " GROUP BY cp.conversation.id HAVING COUNT(cp.conversation.id) = 2";
+            
+             c = em.createQuery(jpql, Long.class)
+                   .setParameter("me", me)
+                   .setParameter("other", other)
+                    .getSingleResult();
+
+            return Response.ok(c).build();
+
+        } catch (NoResultException e) {
+            return Response.ok(c).build();
+        }
+        
+
+        
+    }
+
+
+
+
+
+
+
+
+
+
+
     
     @Path("convPart")
     @GET
@@ -214,7 +257,6 @@ public class RestResource {
         //                 "      WHERE m2.conversation_id = c.id " + 
         //         "  ) ";
 
-
         /*       CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
         
@@ -250,58 +292,52 @@ public class RestResource {
         
         List<Object[]> feedList = em.createQuery(cq).getResultList(); */
 
-        
-        
         //now using joins instead mutipleselect
         CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<FeedMsgSummaryDTO> cq =
-                cb.createQuery(FeedMsgSummaryDTO.class);
+        CriteriaQuery<FeedMsgSummaryDTO> cq = cb.createQuery(FeedMsgSummaryDTO.class);
 
         // ROOT
         Root<Conversation> conversation = cq.from(Conversation.class);
 
         // JOINS
         Join<Conversation, ConversationParticipant> mePart = conversation.join("participant");
-                
 
         Join<Conversation, ConversationParticipant> otherPart = conversation.join("participant");
-                
 
         Join<ConversationParticipant, User> otherUser = otherPart.join("user");
 
-        Join<Conversation, Message> message =
-                conversation.join("messages");
+        Join<Conversation, Message> message = conversation.join("messages");
 
         // SUBQUERY: last message id per conversation
         Subquery<Long> lastMessageId = cq.subquery(Long.class);
         Root<Message> m2 = lastMessageId.from(Message.class);
 
         lastMessageId.select(cb.max(m2.get("id")))
-                    .where(cb.equal(m2.get("conversation"), conversation));
+                .where(cb.equal(m2.get("conversation"), conversation));
 
         // SELECT (constructor projection)
         cq.select(cb.construct(
-            FeedMsgSummaryDTO.class,
-            conversation.get("id"),
-            otherUser.get("username"),
-            message.get("messageText"),
-            message.get("sender").get("id"),
-            message.get("createdAt")
-        ));
+                FeedMsgSummaryDTO.class,
+                conversation.get("id"),
+                otherUser.get("username"),
+                message.get("messageText"),
+                message.get("sender").get("id"),
+                message.get("createdAt")));
 
         // WHERE
         cq.where(
-            cb.equal(mePart.get("user").get("id"), userId),
-            cb.notEqual(otherUser.get("id"), userId),
-            cb.equal(message.get("id"), lastMessageId)
-        );
+                cb.equal(mePart.get("user").get("id"), userId),
+                cb.notEqual(otherUser.get("id"), userId),
+                cb.equal(message.get("id"), lastMessageId));
 
         cq.distinct(true);
         List<FeedMsgSummaryDTO> ms = em.createQuery(cq).getResultList();
         return Response.ok(ms).build();
 
-   
     }
+    
+
+
 
 
   

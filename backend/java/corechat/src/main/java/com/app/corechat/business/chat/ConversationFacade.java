@@ -15,15 +15,6 @@ public class ConversationFacade {
 
 
 
-    /**
-     * create new conversation
-     * @param conv
-     */
-    public void createNewConversation() {
-        Conversation conv = new Conversation();
-        em.persist(conv);
-
-    }
 
 
     /**

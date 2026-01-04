@@ -8,6 +8,13 @@ public class ConversationParticipantId implements Serializable{
     private Long conversation;
     private Long user;
 
+    public ConversationParticipantId(){}
+    public ConversationParticipantId(Long conversation, Long user) {
+        this.conversation = conversation;
+        this.user = user;
+    }
+
+    
 
     @Override
     public boolean equals(Object o) {

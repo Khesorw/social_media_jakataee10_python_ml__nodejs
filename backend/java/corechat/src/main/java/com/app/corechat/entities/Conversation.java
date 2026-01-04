@@ -22,7 +22,7 @@ public class Conversation {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="created_at", insertable=false,updatable=false)
+    @Column(name="created_at", updatable=false)
     private OffsetDateTime createdAt;
 
 
@@ -32,6 +32,10 @@ public class Conversation {
 
     @OneToMany(mappedBy="conversation",cascade=CascadeType.ALL)
     private List<Message> messages;
+
+    public Conversation() {
+        this.createdAt = OffsetDateTime.now();
+    }
 
     public Long getId() {
         return id;

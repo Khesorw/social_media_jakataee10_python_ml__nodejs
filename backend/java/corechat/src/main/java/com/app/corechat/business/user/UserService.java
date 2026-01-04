@@ -17,16 +17,12 @@ public class UserService {
 
     @Inject
     private PasswordHash passwordHash;
-
-
+    
     public void persist(User user) {
 
         if (user.getEmail() == null || user.getUsername() == null || user.getPassword() == null) {
                 throw new IllegalArgumentException("Null values");
         }
-        
-        
-
               
         //normalization
         user.setEmail(user.getEmail().toLowerCase());
@@ -41,23 +37,14 @@ public class UserService {
            
         }
 
-           if (user.getEmail().isBlank() || user.getUsername().isBlank() || user.getPassword().isBlank()) {
+        if (user.getEmail().isBlank() || user.getUsername().isBlank() || user.getPassword().isBlank()) {
             throw new IllegalArgumentException("One of these attributes is blank {email, username, password}");
         }
-
-    
-     
-
-    
-
-
-
+        
         //hashing the password
         String plainPassword = user.getPassword();
         String hashedPassword = passwordHash.generate(plainPassword.toCharArray());
         user.setPassword(hashedPassword);
-
-
         userFecade.create(user);
       
        
