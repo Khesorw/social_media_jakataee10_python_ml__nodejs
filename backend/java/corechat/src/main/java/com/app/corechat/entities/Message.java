@@ -40,6 +40,12 @@ public class Message {
 
     }
 
+    public Message(Conversation conversation, String messageText, User sender) {
+        this.conversation = conversation;
+        this.messageText = messageText;
+        this.sender = sender;
+    }
+
     public Long getId() {
         return id;
     }

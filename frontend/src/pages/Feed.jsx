@@ -8,21 +8,9 @@ export default function Feed() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
   const [chats, setChats] = useState([]);
-  const [myUserId, setMyUserId] = useState(null);
   const [searchResult, setSearchResult] = useState([]);
 
-  // Fetch Current User
-  useEffect(() => {
-    const fetchUserId = async () => {
-      try {
-        const res = await axios.get('/corechat/core/me');
-        setMyUserId(res.data.id);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    fetchUserId();
-  }, []);
+
 
   // Fetch Conversation History
   useEffect(() => {
@@ -88,6 +76,11 @@ export default function Feed() {
     }
   };
 
+  const handleGoToConversation = (convId) => {
+  navigate(`/chat/${convId}`);
+};
+
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
@@ -118,7 +111,6 @@ export default function Feed() {
           ) : (
             <>
               <button className="text-xl hover:scale-110 transition" onClick={() => setIsSearching(true)}>🔍</button>
-              <button className="text-xl hover:scale-110 transition">➕</button>
             </>
           )}
         </div>
@@ -142,12 +134,21 @@ export default function Feed() {
                     <p className="text-xs text-gray-500">{user.email}</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleAddFriend(user)}
-                  className="w-8 h-8 flex items-center justify-center bg-indigo-100 text-indigo-600 rounded-full hover:bg-indigo-600 hover:text-white transition"
-                >
-                  ＋
-                </button>
+                {!user.existing ? (
+                    <button
+                      onClick={() => handleAddFriend(user)}
+                      className="w-8 h-8 flex items-center justify-center bg-indigo-100 text-indigo-600 rounded-full hover:bg-indigo-600 hover:text-white transition"
+                    >
+                      ＋
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleGoToConversation(user.convId)}
+                      className="text-xs px-3 py-1 rounded-full bg-gray-200 text-gray-700 hover:bg-indigo-600 hover:text-white transition"
+                    >
+                      Go to chat
+                    </button>
+                  )}
               </div>
             ))
           ) : (

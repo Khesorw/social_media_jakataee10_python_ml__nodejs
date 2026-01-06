@@ -90,10 +90,6 @@ public class MessageService {
     
 
 
-
-
-
-
     /**
      * Get messages for the x conversation. Validate Input, validate conversation exists,
              * validate authorization, talk to facade
@@ -132,7 +128,7 @@ public class MessageService {
             throw new SecurityException("un-authenticated user");
         }
 
-        //gets userid form User through email
+        //gets the userid of the main User through their email (getCallerPrincipal.getName())
         Long userId = userFecade.findUserIdByEmail(email);
         if (userId == null) {
             throw new SecurityException("user is not registered or authenticated");
