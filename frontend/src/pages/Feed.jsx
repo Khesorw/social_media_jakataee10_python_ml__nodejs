@@ -25,6 +25,7 @@ export default function Feed() {
     feedHistory();
   }, []);
 
+  // format the date from that complex form into hrs:min if today and day of week if not
   const formateMessageDate = d => {
     if (!d) return "";
     const date = new Date(d);
@@ -36,6 +37,8 @@ export default function Feed() {
     });
   };
 
+
+  //Handle the search friend section
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!query.trim()) return;
@@ -59,6 +62,7 @@ export default function Feed() {
 
 
 
+
   const handleAddFriend = async (user) => {
     console.log("Future logic: Add friend/Start chat with", user.id);
     try {
@@ -66,8 +70,10 @@ export default function Feed() {
         otherUserid: user.id
       });
 
-      console.log("conversation room created convId is: " + response.data.convId);
+      console.log(response.data);
+      console.log("conversation room created convId is: " + response.data.conversationId);
       navigate(`/chat/${response.data.conversationId}`);
+
       
     } catch (error) {
 
@@ -76,6 +82,9 @@ export default function Feed() {
     }
   };
 
+
+  //    onClick={() => navigate(`/chat/${chat.conversationId}`)}
+  
   const handleGoToConversation = (convId) => {
   navigate(`/chat/${convId}`);
 };
@@ -176,7 +185,7 @@ export default function Feed() {
                   <span className="text-xs text-gray-400">{formateMessageDate(chat.createdAt)}</span>
                 </div>
                 <p className="text-sm text-gray-500 truncate mt-1">
-                  {chat.lastMessageText || "No messages yet"}
+                  {chat.lastMessageText}
                 </p>
               </div>
             </div>

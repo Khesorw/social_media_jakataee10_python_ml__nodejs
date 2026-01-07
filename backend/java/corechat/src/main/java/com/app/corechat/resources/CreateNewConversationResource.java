@@ -29,7 +29,6 @@ public class CreateNewConversationResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createNewConvRoom(CreateConvDTO createConvDTO) {
 
-
         if (createConvDTO == null) {
             LOG.info("Json binding failed no CreateConvDTO ");
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -38,7 +37,13 @@ public class CreateNewConversationResource {
             LOG.info("Json binding success CreateConvDTO other usedId"+createConvDTO.getOtherUserid());
             Long newConvId = createdConversationService.createConvRoom(createConvDTO.getOtherUserid());
 
-            return Response.status(Response.Status.CREATED).entity(new CreateConvResponseDTO(newConvId)).build();
+            LOG.info("Got new conversation ID the convId is: " + newConvId);
+
+            CreateConvResponseDTO convResponseDTO = new CreateConvResponseDTO(newConvId);
+            LOG.info("Got new conversation ID the convId is: " + convResponseDTO.getConversationId());
+
+
+            return Response.status(Response.Status.CREATED).entity(convResponseDTO).build();
             
         }
 
