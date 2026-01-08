@@ -34,15 +34,13 @@ public class CreateNewConversationResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         } 
         else {
-            LOG.info("Json binding success CreateConvDTO other usedId"+createConvDTO.getOtherUserid());
+
+            
+            
             Long newConvId = createdConversationService.createConvRoom(createConvDTO.getOtherUserid());
-
             LOG.info("Got new conversation ID the convId is: " + newConvId);
-
             CreateConvResponseDTO convResponseDTO = new CreateConvResponseDTO(newConvId);
             LOG.info("Got new conversation ID the convId is: " + convResponseDTO.getConversationId());
-
-
             return Response.status(Response.Status.CREATED).entity(convResponseDTO).build();
             
         }

@@ -12,18 +12,24 @@ export default function Feed() {
 
 
 
+
   // Fetch Conversation History
-  useEffect(() => {
-    const feedHistory = async () => {
-      try {
-        const response = await axios.get('/corechat/core/feedHistory');
-        if (response.status === 200) setChats(response.data);
-      } catch (error) {
-        console.error("History fetch error", error);
+  
+    useEffect(() => {
+      const feedHistory = async () => {
+        try {
+          const response = await axios.get('/corechat/core/feedHistory');
+          if (response.status === 200) setChats(response.data);
+        } catch (error) {
+          console.error("History fetch error", error);
+        }
       }
-    }
-    feedHistory();
-  }, []);
+      feedHistory();
+    }, []);
+    
+  
+
+
 
   // format the date from that complex form into hrs:min if today and day of week if not
   const formateMessageDate = d => {
@@ -70,9 +76,14 @@ export default function Feed() {
         otherUserid: user.id
       });
 
-      console.log(response.data);
-      console.log("conversation room created convId is: " + response.data.conversationId);
-      navigate(`/chat/${response.data.conversationId}`);
+      if (!(response.data.conversationId == null || response.data.conversationId <= 0)) {
+        console.log(response.data);
+        console.log("conversation room created convId is: " + response.data.conversationId);
+        navigate(`/chat/${response.data.conversationId}`);
+      } else {
+        console.log("empty conversationID" + response.data.conversationId)
+        return;
+      }
 
       
     } catch (error) {
@@ -85,10 +96,30 @@ export default function Feed() {
 
   //    onClick={() => navigate(`/chat/${chat.conversationId}`)}
   
-  const handleGoToConversation = (convId) => {
+const handleGoToConversation = (convId) => {
   navigate(`/chat/${convId}`);
 };
 
+const handleDelete = async (convId) => {
+  console.log("users conversation is: " + convId);
+
+  try {
+
+      await axios.delete(`/corechat/core/conversation/delete/${convId}`);
+
+    console.log("deleted conversation " + convId);
+        //re refetch
+        setChats(prev => 
+          prev.filter(chat => chat.conversationId !== convId)
+        );
+    
+  } catch (error) {
+    console.log("error while deleteing ")
+  }
+
+ 
+    
+  };//end handledelete()
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -172,22 +203,43 @@ export default function Feed() {
           {chats.map((chat) => (
             <div
               key={chat.conversationId}
-              onClick={() => navigate(`/chat/${chat.conversationId}`)}
               className="flex items-center gap-3 px-4 py-3 bg-white border-b cursor-pointer hover:bg-gray-100"
             >
-              <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold">
+              <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold"
+              onClick={() => navigate(`/chat/${chat.conversationId}`)}>
                 {chat.otherUserName.slice(0, 2).toUpperCase()}
               </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-center">
-                  <h2 className="font-medium text-gray-900 truncate">{chat.otherUserName}</h2>
-                  <span className="text-xs text-gray-400">{formateMessageDate(chat.createdAt)}</span>
-                </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex justify-between items-start"> {/* Changed items-center to items-start */}
+              
+              {/* Left Side: Name and Last Message */}
+              <div className="flex-1 truncate">
+                <h2 className="font-medium text-gray-900 truncate">{chat.otherUserName}</h2>
                 <p className="text-sm text-gray-500 truncate mt-1">
                   {chat.lastMessageText}
                 </p>
               </div>
+
+              {/* Right Side: Date and Delete Stacked */}
+              <div className="flex flex-col items-end ml-4">
+                <span className="text-xs text-gray-400">
+                  {formateMessageDate(chat.createdAt)}
+                </span>
+                <button 
+                  className="text-xs text-red-600 hover:text-red-800 mt-1 mr-3" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(chat.conversationId)
+                      }}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+
+
             </div>
           ))}
         </div>
