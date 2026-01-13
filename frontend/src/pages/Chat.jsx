@@ -181,7 +181,7 @@ useEffect(() => {
   return (
     <>
       {ActiveCallState.has(callState)? (
-        <ActiveCall callState={callState} setCallState={setCallState} wsRef={wsRef}  />
+        <ActiveCall callState={callState} setCallState={setCallState} wsRef={wsRef} conversationId={chatId} myUserId={myUserId} />
       ) : (
         <div className="h-screen flex flex-col bg-gray-50">
 

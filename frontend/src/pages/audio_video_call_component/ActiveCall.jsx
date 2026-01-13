@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { MESSAGE, MessageType, Call_States, Call_IntentType } from '../../domain/message';
+import { MESSAGE, MessageType, Call_States, Call_IntentType, RepondIncomingCall} from '../../domain/message';
 import { PhoneIcon, XMarkIcon }  from "@heroicons/react/24/solid";
 
 
@@ -15,7 +15,7 @@ import {
 } from "@heroicons/react/24/solid";
 
 
-const ActiveCall = ({ callState, setCallState, wsRef }) => {
+const ActiveCall = ({ callState, setCallState, wsRef , conversationId, myUserId}) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -28,7 +28,7 @@ const ActiveCall = ({ callState, setCallState, wsRef }) => {
 
   const handleHangup = () => {
     console.log("Call ended.");
-    navigate("/chat");
+    setCallState(Call_States.IDLE);
   };
 
   console.log(callState);
@@ -83,12 +83,40 @@ const ActiveCall = ({ callState, setCallState, wsRef }) => {
       
       
     const onReject = () => {
-      setCallState(Call_States.IDLE);
+    setCallState(Call_States.IDLE);
+
+           
+      const metaOveride = {
+        conversationId: conversationId,
+        senderId: myUserId
+      };
+
+      const rejectedMessage = MESSAGE(MessageType.CALL_RESPONSE, RepondIncomingCall.REJECT, metaOveride);
+      
+      wsRef.current?.send(JSON.stringify(rejectedMessage));
       
     }
 
     const onAccept = () => {
+
+      /**
+       *   const meta = {
+    conversationId: 0,
+    senderId: 0,
+    timestamp: Date.now(),
+    callId: 0,
+    ...metaOverrides,
+  };
+       */
       setCallState(Call_States.ACTIVE);
+      const metaOveride = {
+        conversationId: conversationId,
+        senderId: myUserId
+      };
+
+      const acceptedMessage = MESSAGE(MessageType.CALL_RESPONSE, RepondIncomingCall.ACCEPT, metaOveride);
+      
+      wsRef.current?.send(JSON.stringify(acceptedMessage));
       
     }
 
@@ -139,7 +167,7 @@ const ActiveCall = ({ callState, setCallState, wsRef }) => {
             <UserIcon className="h-20 w-20 text-gray-300" />
           </div>
 
-          <h2 className="text-2xl font-semibold">{contactName}</h2>
+          <h2 className="text-2xl font-semibold">contactName</h2>
 
           <p className="mt-2 text-sm text-cyan-400">
             {callType === "video" ? "Video Calling..." : "00:15"}
