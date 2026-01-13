@@ -23,7 +23,6 @@ export default function Chat() {
   const ActiveCallState = new Set([
     Call_States.INCOMING,
     Call_States.ACTIVE,
-    Call_States.OUTGOING,
   ]);
 
 
@@ -165,7 +164,7 @@ useEffect(() => {
   
   const handleAudio = () => {
     //temporary checking the audio on incoming call will change back to outgoing after test
-    setCallState(Call_States.INCOMING);
+    setCallState(Call_States.OUTGOING);
 
     const MetaOveride = {
       conversationId: chatId,

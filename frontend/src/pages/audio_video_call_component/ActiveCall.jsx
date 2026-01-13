@@ -49,7 +49,6 @@ const ActiveCall = ({ callState, setCallState, wsRef , conversationId, myUserId}
       const ringtone = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
       ringtone.loop = true;
       audioRef.current = ringtone;
-
       ringtone.play().catch(error => {
         console.log("error", error);
       });
@@ -61,63 +60,60 @@ const ActiveCall = ({ callState, setCallState, wsRef , conversationId, myUserId}
 
       }, 40000);
 
-      return ()=> stopAudio();
+    }, []);
 
-      },[]);
+    const stopAudio = () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current = null;
+      }
 
-      const stopAudio = () => {
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current.currentTime = 0;
-          audioRef.current = null;
-        }
-
-        if (audioTimer.current) {
-          clearTimeout(audioTimer.current);
-        }
-
-        setCallState(Call_States.IDLE);
-        console.log("user either didnot picked the call or timeout");
-      }//stopAudio()
-
-      
+      if (audioTimer.current) {
+        clearTimeout(audioTimer.current);
+      }
+   
+    }//stopAudio()   
       
     const onReject = () => {
-    setCallState(Call_States.IDLE);
-
-           
+      stopAudio();
+      setCallState(Call_States.IDLE);     
       const metaOveride = {
         conversationId: conversationId,
         senderId: myUserId
       };
 
-      const rejectedMessage = MESSAGE(MessageType.CALL_RESPONSE, RepondIncomingCall.REJECT, metaOveride);
-      
+      const MetaOveride = {
+        conversationId: conversationId,
+        senderId:  myUserId,
+      }
+
+      const rejectedMessage = MESSAGE(MessageType.CALL_RESPONSE, RepondIncomingCall.REJECT, metaOveride, MetaOveride);
       wsRef.current?.send(JSON.stringify(rejectedMessage));
       
-    }
+    }//onReject ()
 
     const onAccept = () => {
-
-      /**
-       *   const meta = {
-    conversationId: 0,
-    senderId: 0,
-    timestamp: Date.now(),
-    callId: 0,
-    ...metaOverrides,
-  };
-       */
+      stopAudio();
       setCallState(Call_States.ACTIVE);
       const metaOveride = {
         conversationId: conversationId,
         senderId: myUserId
       };
 
-      const acceptedMessage = MESSAGE(MessageType.CALL_RESPONSE, RepondIncomingCall.ACCEPT, metaOveride);
-      
+      const MetaOveride = {
+        conversationId: conversationId,
+        senderId:  myUserId,
+
+      }
+
+      const acceptedMessage = MESSAGE(MessageType.CALL_RESPONSE, RepondIncomingCall.ACCEPT, metaOveride, MetaOveride);
       wsRef.current?.send(JSON.stringify(acceptedMessage));
       
+    }//onAccept()
+
+    const handleHangup = () => {
+      setCallState(Call_States.IDLE);
     }
 
     return (
