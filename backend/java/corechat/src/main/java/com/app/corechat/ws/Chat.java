@@ -164,7 +164,6 @@ public class Chat {
 
         switch (type) {
             case "chat_message":
-
                 String email = session.getUserPrincipal().getName();
                 String textM = msg.getJsonObject("payload").getString("text", "notAType");
                 if (textM == null) {
@@ -212,7 +211,14 @@ public class Chat {
            dto.createdAt = saved.getCreatedAt();
            dto.senderId = saved.getSender().getId();
 
-           String json = JsonbBuilder.create().toJson(dto);
+           String jsonStr = JsonbBuilder.create().toJson(dto);
+           
+           JsonObject jsonObject = Json.createReader(new StringReader(jsonStr)).readObject();
+           JsonObject updaObject = Json.createObjectBuilder(jsonObject)
+                   .add("type", "chat_message").build();
+                                
+           String json = updaObject.toString();
+           
 
             LOG.info(() -> "MEssage to send to front end: "+json);
 

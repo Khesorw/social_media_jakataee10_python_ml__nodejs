@@ -20,6 +20,19 @@ export const MessageType = Object.freeze({
   CALL_END: "call_end",
 });
 
+export const Call_IntentType = Object.freeze({
+
+  VIDEO_CALL: "video_call",
+  AUDIO_CALL : "audio_call",
+});
+
+export const RepondIncomingCall = Object.freeze({
+
+  REJECT: "reject",
+  ACCEPT: "accept",
+});
+
+
 export const EndReasons = Object.freeze({
   HANGUP: "hangup",
   REJECTED: "rejected",
