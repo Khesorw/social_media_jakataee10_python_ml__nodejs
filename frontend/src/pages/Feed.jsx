@@ -96,8 +96,12 @@ export default function Feed() {
 
   //    onClick={() => navigate(`/chat/${chat.conversationId}`)}
   
-const handleGoToConversation = (convId) => {
-  navigate(`/chat/${convId}`);
+const handleGoToConversation = (chat) => {
+  navigate(`/chat/${chat.conversationId}`, {
+    state: {
+      otherUserName: chat.otherUserName,
+    }
+  });
 };
 
 const handleDelete = async (convId) => {
@@ -107,15 +111,15 @@ const handleDelete = async (convId) => {
 
       await axios.delete(`/corechat/core/conversation/delete/${convId}`);
 
-    console.log("deleted conversation " + convId);
-        //re refetch
-        setChats(prev => 
-          prev.filter(chat => chat.conversationId !== convId)
-        );
-    
+      console.log("deleted conversation " + convId);
+          //re refetch
+          setChats(prev => 
+            prev.filter(chat => chat.conversationId !== convId)
+          );
+      
   } catch (error) {
-    console.log("error while deleteing ")
-  }
+      console.log("error while deleteing ")
+    }
 
  
     
@@ -206,12 +210,12 @@ const handleDelete = async (convId) => {
               className="flex items-center gap-3 px-4 py-3 bg-white border-b cursor-pointer hover:bg-gray-100"
             >
               <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold"
-              onClick={() => navigate(`/chat/${chat.conversationId}`)}>
+              onClick={() => handleGoToConversation(chat)}>
                 {chat.otherUserName.slice(0, 2).toUpperCase()}
               </div>
 
           <div className="flex-1 min-w-0">
-            <div className="flex justify-between items-start"> {/* Changed items-center to items-start */}
+            <div className="flex justify-between items-start"> {/* Changed item center to item start */}
               
               {/* Left Side: Name and Last Message */}
               <div className="flex-1 truncate">
@@ -238,8 +242,6 @@ const handleDelete = async (convId) => {
               </div>
             </div>
           </div>
-
-
             </div>
           ))}
         </div>
