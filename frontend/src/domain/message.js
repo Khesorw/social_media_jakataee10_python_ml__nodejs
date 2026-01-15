@@ -51,6 +51,20 @@ export function normalizeEndReason(reason) {
 }
 
 
+export function CreateSession(sessionOverrides = {}) {
+  
+  const session = {
+    callId: 0,
+    callState: null,
+    callType: null,
+    isCaller: true,
+    startedAt: Date.now(),
+    ...sessionOverrides,
+  };
+
+  return session;
+}
+
 //Message Factory
 
 export function MESSAGE(type, payloadData, metaOverrides = {}) {

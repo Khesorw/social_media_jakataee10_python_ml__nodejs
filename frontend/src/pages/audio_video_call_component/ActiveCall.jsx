@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { MESSAGE, MessageType, Call_States, Call_IntentType, RepondIncomingCall} from '../../domain/message';
+import { MESSAGE, MessageType, Call_States, Call_IntentType, RepondIncomingCall,EndReasons, normalizeEndReason} from '../../domain/message';
 import { PhoneIcon, XMarkIcon }  from "@heroicons/react/24/solid";
 
 
@@ -14,9 +14,9 @@ import {
   UserIcon,
 } from "@heroicons/react/24/solid";
 
-
-const ActiveCall = ({ callState, setCallState, wsRef , conversationId, myUserId}) => {
-  const navigate = useNavigate();
+                                                              
+const ActiveCall = ({ callState, setCallState, wsRef , conversationId, myUserId, callSession}) => {
+ 
   const location = useLocation();
 
   const {
@@ -26,10 +26,7 @@ const ActiveCall = ({ callState, setCallState, wsRef , conversationId, myUserId}
 
   const [isMuted, setIsMuted] = useState(false);
 
-  const handleHangup = () => {
-    console.log("Call ended.");
-    setCallState(Call_States.IDLE);
-  };
+  
 
   console.log(callState);
 
@@ -76,44 +73,60 @@ const ActiveCall = ({ callState, setCallState, wsRef , conversationId, myUserId}
     }//stopAudio()   
       
     const onReject = () => {
+
+      console.log("call session from the ref in the onReject is : ", callSession);
+
       stopAudio();
-      setCallState(Call_States.IDLE);     
       const metaOveride = {
         conversationId: conversationId,
-        senderId: myUserId
+        senderId: myUserId,
+        callId: callSession.callId,
       };
 
-      const MetaOveride = {
-        conversationId: conversationId,
-        senderId:  myUserId,
-      }
-
-      const rejectedMessage = MESSAGE(MessageType.CALL_RESPONSE, RepondIncomingCall.REJECT, metaOveride, MetaOveride);
+      const rejectedMessage = MESSAGE(MessageType.CALL_RESPONSE, RepondIncomingCall.REJECT, metaOveride);
       wsRef.current?.send(JSON.stringify(rejectedMessage));
+      console.log('metaOver ride of activeCall ', metaOveride);
+      setCallState(Call_States.ENDED); 
+      
       
     }//onReject ()
 
+
     const onAccept = () => {
       stopAudio();
-      setCallState(Call_States.ACTIVE);
+      
       const metaOveride = {
         conversationId: conversationId,
-        senderId: myUserId
+        senderId: myUserId,
+        callId: callSession.callId,
       };
 
-      const MetaOveride = {
-        conversationId: conversationId,
-        senderId:  myUserId,
-
-      }
-
-      const acceptedMessage = MESSAGE(MessageType.CALL_RESPONSE, RepondIncomingCall.ACCEPT, metaOveride, MetaOveride);
+      const acceptedMessage = MESSAGE(MessageType.CALL_RESPONSE, RepondIncomingCall.ACCEPT, metaOveride);
       wsRef.current?.send(JSON.stringify(acceptedMessage));
+      console.log('metaOver ride of activeCall ', metaOveride);
+
+
+      setCallState(Call_States.ACTIVE);
+
       
     }//onAccept()
 
+    /**
+     * send hangup message to caller with appropriate end reason
+     * set the callid of receiver to 0
+     * set the call state back to idle
+     */
     const handleHangup = () => {
-      setCallState(Call_States.IDLE);
+      const metaOveride = {  
+        conversationId: conversationId,
+        senderId: myUserId,
+        callId: callSession.callId,
+
+      };
+      const hangupMessage = MESSAGE(MessageType.CALL_END, EndReasons.HANGUP, metaOveride);
+      wsRef.send(JSON.stringify(hangupMessage));
+      console.log('metaOver ride of activeCall ', metaOveride);
+      setCallState(Call_States.ENDED);
     }
 
     return (
@@ -194,7 +207,7 @@ const ActiveCall = ({ callState, setCallState, wsRef , conversationId, myUserId}
 
             {/* Hangup */}
             <button
-              onClick={handleHangup}
+              onClick={ handleHangup}
               className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600 shadow-lg transition hover:bg-red-700"
             >
               <PhoneXMarkIcon className="h-7 w-7 text-white" />

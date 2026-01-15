@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { ArrowLeftIcon, VideoCameraIcon, PhoneIcon, PaperAirplaneIcon } from "@heroicons/react/24/solid";
 
-import { MESSAGE, MessageType, Call_States, Call_IntentType } from '../domain/message';
+import { MESSAGE, MessageType, Call_States, Call_IntentType, RepondIncomingCall} from '../domain/message';
+import { nanoid } from "nanoid";
 
 import  ActiveCall  from './audio_video_call_component/ActiveCall';
 
@@ -16,6 +17,29 @@ export default function Chat() {
   const location = useLocation();
   const otherUserName = location.state?.otherUserName || "Unknown";
   const [callState, setCallState] = useState(Call_States.IDLE);
+  const [callSession, setCallSession] = useState(null);
+  const callSessionRef = useRef(null);
+
+
+
+
+  //cleanup call useEffect clean the session and set callState back it IDLE if call is not already cleaned
+  useEffect(() => {
+    console.log("cleanup useEffect is being rendered before condion check");
+    console.log("call Session is: ", callSessionRef);
+    console.log("call state is ", callState);
+    if (callState !== Call_States.ENDED) return;
+    if (!callSessionRef.current) return;
+
+    console.log("cleanup useEffect is being rendered after condion check");
+
+    callSessionRef.current = null;
+    setCallState(Call_States.IDLE);
+
+    console.log("call Session is: ", callSessionRef);
+    console.log("call state is ", callState);
+  }, [callState]);
+ 
 
   console.log(chatId);
   const wsRef = useRef(null);
@@ -54,14 +78,13 @@ useEffect(() => {
   //webSocket Connection useEffect
   useEffect(() => {
     if (!myUserId) return;
-    
-      const ws = new WebSocket(`ws://localhost:8080/corechat/chat/${chatId}`);
-      wsRef.current = ws;
 
+    console.log("connected to websocket before");
+    const ws = new WebSocket(`ws://localhost:8080/corechat/chat/${chatId}`);
+    wsRef.current = ws;
+    console.log("connected to websocket after");
       ws.onmessage = e=> {
       
-        console.log("printing on message from before parsing server: ");
-        console.log(`here is my user is ${myUserId}`);
 
         const msg = JSON.parse(e.data);
         console.log("printing on message from server: ", msg);
@@ -83,11 +106,43 @@ useEffect(() => {
           
           case 'call_intent':
             console.log("It is call intent");
-            setCallState(Call_States.INCOMING);
+            console.log(msg);
+            if (!callSession) {
+              const newCallSession = {
+                callId: msg.meta.callId,
+                otherUserId: msg.meta.senderId,
+                callType: Call_IntentType.AUDIO_CALL,
+                callState: Call_States.INCOMING
+              }
+              console.log("setting new call session");
+              //set new callSession
+              callSessionRef.current = newCallSession;
+              console.log('new Call session is: ', callSessionRef.current);
+              
+              //set callSate to incoming (render the incoming call ui)
+              setCallState(Call_States.INCOMING);
+
+              console.log('new Call sesssion is with incoming call state',newCallSession);  
+            }//if()
+            else {
+              console.log("callSession is already established");
+            }
+            
             break;
-          
+
           case 'call_response':
-            console.log("It is call respond");
+            if (msg.meta.callId == callSessionRef.current.callId) {
+            
+            console.log("RENDER from response ",  callState);                                 
+            console.log("It is call respond ", msg);
+            console.log("call id of msg.meta.callid is:  ", msg.meta.callId);
+            console.log("call session is: ", callSessionRef);
+            
+            setCallState(msg.payload.respond === RepondIncomingCall.ACCEPT ? Call_States.ACTIVE : Call_States.ENDED);
+            console.log("current call state after accept or reject " , callState);
+              
+             }
+
             break;
           
           case 'call_offer':
@@ -103,6 +158,11 @@ useEffect(() => {
             break;
           
           case 'call_end':
+            console.log("end call message", msg);
+            // if (msg.meta.callId === callSession.callId) {
+              
+              setCallState(Call_States.ENDED);
+            // }
             console.log("end call case");
             break;
           
@@ -116,7 +176,7 @@ useEffect(() => {
     
   return () => ws.close();
 
-}, [chatId, myUserId]);
+}, [chatId, myUserId]);//ws useeffect
 
 
   //sends message first update ui then send it to server through websocket
@@ -149,30 +209,63 @@ useEffect(() => {
   };//handleSend()
 
   const handleVideo = () => {
-  setCallState(Call_States.OUTGOING);
+    setCallState(Call_States.OUTGOING);
     
   const MetaOveride = {
-      conversationId: chatId,
-      senderId: myUserId,
+    conversationId: chatId,
+    senderId: myUserId,
+    callId : callSession.callId,
+      
     };
 
    const videoMessage = MESSAGE(MessageType.CALL_INTENT, Call_IntentType.VIDEO_CALL, MetaOveride);
    wsRef.current?.send(JSON.stringify(videoMessage));
     
+  }
     
-  }//handleVideoCall()
-  
+
+  /**
+   * if call session is create new call session (callId, callType, isCaller), change the sate of call to OUTGOING, then send the MESSAGE that
+   * conatains call_intent with meta 
+   */
   const handleAudio = () => {
-    //temporary checking the audio on incoming call will change back to outgoing after test
-    setCallState(Call_States.OUTGOING);
+    console.log("call state right now is " , callState);
+    if (callState === Call_States.IDLE) {  
+      const sessionOverrider = {
+        callId: nanoid(10), //unique callId with the length = 10  
+        callState: Call_States.OUTGOING,
+        callType: Call_IntentType.AUDIO_CALL,
+        isCaller: true,
+      }
 
-    const MetaOveride = {
-      conversationId: chatId,
-      senderId: myUserId,
-    };
+      
+      console.log('new call sessiong from handelAudio call ',sessionOverrider);
+      
+     const metaOveride = {
+       conversationId: chatId,
+       senderId: myUserId,
+       callId: sessionOverrider.callId,
+      };
 
-   const  audioMessage = MESSAGE(MessageType.CALL_INTENT, Call_IntentType.AUDIO_CALL, MetaOveride);
-   wsRef.current?.send(JSON.stringify(audioMessage));
+      console.log(metaOveride)
+
+      const audioMessage = MESSAGE(MessageType.CALL_INTENT, Call_IntentType.AUDIO_CALL, metaOveride);
+
+      wsRef.current?.send(JSON.stringify(audioMessage)); 
+
+      // setCallSession(sessionOverrider);
+      callSessionRef.current = sessionOverrider;
+      console.log("call session and call sate is before setting state to outgoing ", { callSessionRef, callState });
+      setCallState(Call_States.OUTGOING);
+      console.log("call session and call sate is: ", { callSessionRef, callState });
+
+      
+    }//if()
+    else {
+      console.log("already outgoing call state");
+    }
+
+    
     
   }//handleAudioCall()
 //callState, setCallState, wsRef
@@ -180,7 +273,7 @@ useEffect(() => {
   return (
     <>
       {ActiveCallState.has(callState)? (
-        <ActiveCall callState={callState} setCallState={setCallState} wsRef={wsRef} conversationId={chatId} myUserId={myUserId} />
+        <ActiveCall callState={callState} setCallState={setCallState} wsRef={wsRef} conversationId={chatId} myUserId={myUserId} callSession={callSessionRef.current}  />
       ) : (
         <div className="h-screen flex flex-col bg-gray-50">
 
