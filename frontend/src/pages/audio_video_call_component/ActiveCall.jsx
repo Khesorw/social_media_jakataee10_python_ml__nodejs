@@ -15,7 +15,7 @@ import {
 } from "@heroicons/react/24/solid";
 
                                                               
-const ActiveCall = ({ callState, setCallState, wsRef , conversationId, myUserId, callSession}) => {
+const ActiveCall = ({ callState, setCallState, wsRef , conversationId, myUserId, callSessionRef}) => {
  
   const location = useLocation();
 
@@ -74,13 +74,13 @@ const ActiveCall = ({ callState, setCallState, wsRef , conversationId, myUserId,
       
     const onReject = () => {
 
-      console.log("call session from the ref in the onReject is : ", callSession);
+      console.log("call session from the ref in the onReject is : ", callSessionRef);
 
       stopAudio();
       const metaOveride = {
         conversationId: conversationId,
         senderId: myUserId,
-        callId: callSession.callId,
+        callId: callSessionRef.current.callId,
       };
 
       const rejectedMessage = MESSAGE(MessageType.CALL_RESPONSE, RepondIncomingCall.REJECT, metaOveride);
@@ -98,7 +98,7 @@ const ActiveCall = ({ callState, setCallState, wsRef , conversationId, myUserId,
       const metaOveride = {
         conversationId: conversationId,
         senderId: myUserId,
-        callId: callSession.callId,
+        callId: callSessionRef.current.callId,
       };
 
       const acceptedMessage = MESSAGE(MessageType.CALL_RESPONSE, RepondIncomingCall.ACCEPT, metaOveride);
@@ -120,11 +120,11 @@ const ActiveCall = ({ callState, setCallState, wsRef , conversationId, myUserId,
       const metaOveride = {  
         conversationId: conversationId,
         senderId: myUserId,
-        callId: callSession.callId,
+        callId: callSessionRef.current.callId,
 
       };
       const hangupMessage = MESSAGE(MessageType.CALL_END, EndReasons.HANGUP, metaOveride);
-      wsRef.send(JSON.stringify(hangupMessage));
+      wsRef.current.send(JSON.stringify(hangupMessage));
       console.log('metaOver ride of activeCall ', metaOveride);
       setCallState(Call_States.ENDED);
     }
