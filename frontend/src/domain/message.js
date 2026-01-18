@@ -20,7 +20,7 @@ export const initPeerConnection = (wsRef, remoteStreamRef, metaOveride) => {
   }; //iceServers
 
   const pc = new RTCPeerConnection(rtcConfig);
-
+  
   pc.onicecandidate = (event) => {
     if (event.candidate) {
       const sdpCandidate = MESSAGE(
@@ -28,6 +28,8 @@ export const initPeerConnection = (wsRef, remoteStreamRef, metaOveride) => {
         event.candidate,
         metaOveride,
       );
+
+      console.log('sending the candidate to other peer: ' + event.candidate);
       wsRef.current?.send(JSON.stringify(sdpCandidate)); //send the offer through ws
     } //end if
   }; //oniceCandidate()
@@ -48,7 +50,10 @@ export const getLocalMedia = async (localStreamRef) => {
     video: false,
   });
 
-  localStreamRef?.current = stream;
+
+
+
+  localStreamRef.current = stream;
 
   return stream;
 };

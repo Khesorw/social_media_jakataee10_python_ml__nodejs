@@ -179,7 +179,7 @@ export default function Chat() {
 
               const stream = await getLocalMedia(localStreamRef);
               stream.getTracks().forEach((track) => {
-                pcRef.addTrack(track, stream);
+                pcRef.current.addTrack(track, stream);
               });
 
               const offer = await pcRef.current.createOffer();
@@ -199,7 +199,32 @@ export default function Chat() {
 
         case "call_offer":
           console.log("offer type");
+          console.log("offer from caller is: ", msg);
+          console.log(getMetaOverRide(chatId, myUserId, callSessionRef));
+          pcRef.current ??= initPeerConnection(
+            wsRef,
+            remoteStreamRef,
+            getMetaOverRide(chatId, myUserId, callSessionRef),
+          );
           await pcRef.current.setRemoteDescription(msg.payload.sdp);
+
+          const stream = await getLocalMedia(localStreamRef);
+          stream
+            .getTracks()
+            .forEach((track) => pcRef.current.addTrack(track, stream));
+
+          const answer = await pcRef.current.createAnswer();
+          console.log("answer is ", answer);
+          await pcRef.current.setLocalDescription(answer);
+          wsRef.current.send(
+            JSON.stringify(
+              MESSAGE(
+                MessageType.CALL_ANSWER,
+                answer,
+                getMetaOverRide(chatId, myUserId, callSessionRef),
+              ),
+            ),
+          );
           (pendCandRef.current || []).forEach((c) =>
             pcRef.current.addIceCandidate(c),
           );
@@ -209,6 +234,7 @@ export default function Chat() {
 
         case "call_answer":
           console.log("answer msessage type");
+          console.log(' hello prinintg answer from callee ', msg.payload.sdp);
           await pcRef.current.setRemoteDescription(msg.payload.sdp);
           (pendCandRef.current || []).forEach((c) =>
             pcRef.current.addIceCandidate(c),
@@ -216,7 +242,7 @@ export default function Chat() {
           pendCandRef.current = [];
           break;
 
-        case "ice_candidate": {
+        case "ice_candidate":
           console.log("ice canditae type");
           console.log("ice candidate message from onice ", msg);
           if (msg.meta.callId !== callSessionRef.current.callId) return;
@@ -232,12 +258,10 @@ export default function Chat() {
             pendCandRef.current.push(candidate);
           }
           break;
-        }
 
         case "call_end":
           console.log("end call message", msg);
           if (msg.meta.callId === callSessionRef.current.callId) {
-            callSession;
             setCallState(Call_States.ENDED);
           }
           console.log("end call case");
