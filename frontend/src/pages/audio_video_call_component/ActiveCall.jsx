@@ -1,10 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { MESSAGE, MessageType, Call_States, Call_IntentType, RepondIncomingCall,EndReasons, normalizeEndReason} from '../../domain/message';
-import { PhoneIcon, XMarkIcon }  from "@heroicons/react/24/solid";
-
-
- 
+import {
+  MESSAGE,
+  MessageType,
+  Call_States,
+  Call_IntentType,
+  RepondIncomingCall,
+  EndReasons,
+  normalizeEndReason,
+} from "../../domain/message";
+import { PhoneIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 import {
   MicrophoneIcon,
@@ -14,49 +19,80 @@ import {
   UserIcon,
 } from "@heroicons/react/24/solid";
 
-                                                              
-const ActiveCall = ({ callState, setCallState, wsRef , conversationId, myUserId, callSessionRef}) => {
- 
-  const location = useLocation();
+const ActiveCall = ({
+  callState,
+  setCallState,
+  wsRef,
+  conversationId,
+  myUserId,
+  callSessionRef,
+  remoteStreamRef,
+  localStreamRef,
+}) => {
 
-  const {
-    contactName = "Unknown",
-    callType = "audio",
-  } = location.state || {};
 
   const [isMuted, setIsMuted] = useState(false);
-
-  
+  const audioRef = useRef(null);
+  const remoteVideoRef = useRef(null);
+  const localVideoRef = useRef(null);
 
   console.log(callState);
 
+  const handleHangup = () => {
+    const metaOveride = {
+      conversationId: conversationId,
+      senderId: myUserId,
+      callId: callSessionRef.current.callId,
+    };
+    const hangupMessage = MESSAGE(
+      MessageType.CALL_END,
+      EndReasons.HANGUP,
+      metaOveride,
+    );
 
+    //local audio and ref cleanup
+
+    wsRef.current.send(JSON.stringify(hangupMessage));
+    console.log("metaOver ride of activeCall ", metaOveride);
+    setCallState(Call_States.ENDED);
+  }; //hangup
+
+  const cleanupLocalVideoAndAudio = () => {
+      if (audioRef.current) {
+        audioRef.current.srcObject = null;
+      }
+
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = null;
+      }
+      
+      if (remoteVideoRef.current.srcObject) {
+        remoteVideoRef.current.srcObject = null;
+      }
+  }
 
   /**
-   * 
+   *
    * @returns Incoming (accept/reject) call component
    */
   const SimulateIncomingCall = () => {
-
     const audioRef = useRef(null);
     const audioTimer = useRef(null);
 
-
     useEffect(() => {
-      const ringtone = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
+      const ringtone = new Audio(
+        "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+      );
       ringtone.loop = true;
       audioRef.current = ringtone;
-      ringtone.play().catch(error => {
+      ringtone.play().catch((error) => {
         console.log("error", error);
       });
 
       audioTimer.current = setTimeout(() => {
-        
         stopAudio();
-        console.log("Stopped ringtone")
-
+        console.log("Stopped ringtone");
       }, 40000);
-
     }, []);
 
     const stopAudio = () => {
@@ -69,12 +105,13 @@ const ActiveCall = ({ callState, setCallState, wsRef , conversationId, myUserId,
       if (audioTimer.current) {
         clearTimeout(audioTimer.current);
       }
-   
-    }//stopAudio()   
-      
-    const onReject = () => {
+    }; //stopAudio()
 
-      console.log("call session from the ref in the onReject is : ", callSessionRef);
+    const onReject = () => {
+      console.log(
+        "call session from the ref in the onReject is : ",
+        callSessionRef,
+      );
 
       stopAudio();
       const metaOveride = {
@@ -83,61 +120,47 @@ const ActiveCall = ({ callState, setCallState, wsRef , conversationId, myUserId,
         callId: callSessionRef.current.callId,
       };
 
-      const rejectedMessage = MESSAGE(MessageType.CALL_RESPONSE, RepondIncomingCall.REJECT, metaOveride);
+      const rejectedMessage = MESSAGE(
+        MessageType.CALL_RESPONSE,
+        RepondIncomingCall.REJECT,
+        metaOveride,
+      );
       wsRef.current?.send(JSON.stringify(rejectedMessage));
-      console.log('metaOver ride of activeCall ', metaOveride);
-      setCallState(Call_States.ENDED); 
-      
-      
-    }//onReject ()
-
+      console.log("metaOver ride of activeCall ", metaOveride);
+      setCallState(Call_States.ENDED);
+    }; //onReject ()
 
     const onAccept = () => {
       stopAudio();
-      
+
       const metaOveride = {
         conversationId: conversationId,
         senderId: myUserId,
         callId: callSessionRef.current.callId,
       };
 
-      const acceptedMessage = MESSAGE(MessageType.CALL_RESPONSE, RepondIncomingCall.ACCEPT, metaOveride);
+      const acceptedMessage = MESSAGE(
+        MessageType.CALL_RESPONSE,
+        RepondIncomingCall.ACCEPT,
+        metaOveride,
+      );
       wsRef.current?.send(JSON.stringify(acceptedMessage));
-      console.log('metaOver ride of activeCall ', metaOveride);
-
+      console.log("metaOver ride of activeCall ", metaOveride);
 
       setCallState(Call_States.ACTIVE);
-
-      
-    }//onAccept()
+    }; //onAccept()
 
     /**
      * send hangup message to caller with appropriate end reason
      * set the callid of receiver to 0
      * set the call state back to idle
      */
-    const handleHangup = () => {
-      const metaOveride = {  
-        conversationId: conversationId,
-        senderId: myUserId,
-        callId: callSessionRef.current.callId,
-
-      };
-      const hangupMessage = MESSAGE(MessageType.CALL_END, EndReasons.HANGUP, metaOveride);
-      wsRef.current.send(JSON.stringify(hangupMessage));
-      console.log('metaOver ride of activeCall ', metaOveride);
-      setCallState(Call_States.ENDED);
-    }
 
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-gray-900 text-white gap-6">
-        <h1 className="text-2xl font-semibold">
-          Incoming Call
-        </h1>
+        <h1 className="text-2xl font-semibold">Incoming Call</h1>
 
-        <p className="text-lg opacity-90">
-          callerName
-        </p>
+        <p className="text-lg opacity-90">callerName</p>
 
         <div className="flex gap-10 mt-6">
           <button
@@ -156,74 +179,132 @@ const ActiveCall = ({ callState, setCallState, wsRef , conversationId, myUserId,
             <PhoneIcon className="w-8 h-8" />
           </button>
         </div>
-
       </div>
     );
   }; //SimulateIncomingCall()
 
+  //attach local audio stream after callstate is set to active
+  useEffect(() => {
+    if (callState !== Call_States.ACTIVE) return;
+    if (!audioRef.current) return;
+    if (!remoteStreamRef.current) return;
+
+    audioRef.current.srcObject = remoteStreamRef.current;
+
+    audioRef.current
+      .play()
+      .catch((error) => console.log("Auto paly bocked ", error));
+  }, [callState]);
+
+  //attach localStreamRef video track
+  useEffect(() => {
+    if (!localVideoRef.current) return;
+    if (!localStreamRef?.current) return;
+
+
+    localVideoRef.current.srcObject = localStreamRef.current;
+    localVideoRef.current.muted = true;
+    localVideoRef.current.play().catch(() => { });
+
+  
+  }, [localVideoRef.current, localStreamRef.current]);
+
+  //attach remoteVideoRef
+  useEffect(() => {
+    if (!localVideoRef.current) return;
+    if (!localStreamRef?.current) return;
+
+    
+    remoteVideoRef.current.srcObject = remoteStreamRef.current;
+
+  }, [remoteVideoRef.current, remoteStreamRef.current]);
+
+
+  //handle mute
+  const handleMute = () => {
+    setIsMuted(!isMuted);
+    localStreamRef.current?.getAudioTracks()
+      .forEach(track => track.enabled = !isMuted);
+  }
+
   return (
     <>
       {callState === Call_States.INCOMING ? (
-        
         <SimulateIncomingCall />
       ) : (
         <div className="relative flex h-screen flex-col bg-gray-900 text-white">
+          {/* Caller Info */}
+          <div className="flex flex-1 flex-col items-center justify-center">
+            {/* Avatar */}
+            <div className="mb-6 flex h-36 w-36 items-center justify-center rounded-full bg-gray-700">
+              <UserIcon className="h-20 w-20 text-gray-300" />
+            </div>
+            {callSessionRef.current?.callType === Call_IntentType.VIDEO_CALL ? (
+              <>
+                <video
+                  ref={remoteVideoRef}
+                  autoPlay
+                  playsInline
+                  className="w-full h-full object-cover bg-black"
+                />
+                <video
+                  ref={localVideoRef}
+                  autoPlay
+                  muted
+                  playsInline
+                    className="absolute bottom-4 right-4
+                     w-40 aspect-square object-cover rounded-lg bg-black"
+                />
+              </>
+            ) : (
+              <>
+                <audio ref={audioRef} autoPlay playsInline />
+              </>
+            )}
 
-        {/* Caller Info */}
-        <div className="flex flex-1 flex-col items-center justify-center">
-          {/* Avatar */}
-          <div className="mb-6 flex h-36 w-36 items-center justify-center rounded-full bg-gray-700">
-            <UserIcon className="h-20 w-20 text-gray-300" />
+            <h2 className="text-2xl font-semibold">contactName</h2>
+
+            <p className="mt-2 text-sm text-cyan-400">
+              {callSessionRef.current?.callType === "video" ? "Video Calling..." : "audio "}
+            </p>
           </div>
 
-          <h2 className="text-2xl font-semibold">contactName</h2>
-
-          <p className="mt-2 text-sm text-cyan-400">
-            {callType === "video" ? "Video Calling..." : "00:15"}
-          </p>
-        </div>
-
-        {/* Controls */}
-        <div className="pb-10">
-          <div className="flex items-center justify-center gap-6">
-
-    
-            {/* Mute */}
-          <button
-            onClick={() => setIsMuted(!isMuted)}
-            className={`flex h-14 w-14 items-center justify-center rounded-full border transition
+          {/* Controls */}
+          <div className="pb-10">
+            <div className="flex items-center justify-center gap-6">
+              {/* Mute */}
+              <button
+                onClick={handleMute}
+                className={`flex h-14 w-14 items-center justify-center rounded-full border transition
               ${
                 isMuted
                   ? "bg-white text-gray-900"
                   : "border-white text-white hover:bg-white/10"
               }`}
-          >
-            {isMuted ? (
-              <SpeakerXMarkIcon className="h-6 w-6" />
-            ) : (
-              <MicrophoneIcon className="h-6 w-6" />
-            )}
-          </button>
+              >
+                {isMuted ? (
+                  <SpeakerXMarkIcon className="h-6 w-6" />
+                ) : (
+                  <MicrophoneIcon className="h-6 w-6" />
+                )}
+              </button>
 
-            {/* Hangup */}
-            <button
-              onClick={ handleHangup}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600 shadow-lg transition hover:bg-red-700"
-            >
-              <PhoneXMarkIcon className="h-7 w-7 text-white" />
-            </button>
+              {/* Hangup */}
+              <button
+                onClick={handleHangup}
+                className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600 shadow-lg transition hover:bg-red-700"
+              >
+                <PhoneXMarkIcon className="h-7 w-7 text-white" />
+              </button>
 
-            {/* Speaker */}
-            <button
-              className="flex h-14 w-14 items-center justify-center rounded-full border border-white text-white transition hover:bg-white/10"
-            >
-              <SpeakerWaveIcon className="h-6 w-6" />
-            </button>
-
+              {/* Speaker */}
+              <button className="flex h-14 w-14 items-center justify-center rounded-full border border-white text-white transition hover:bg-white/10">
+                <SpeakerWaveIcon className="h-6 w-6" />
+              </button>
+            </div>
           </div>
         </div>
-        </div>
-     ) }
+      )}
     </>
   );
 };

@@ -1,3 +1,51 @@
+
+export const cleanupCall = (localStreamRef, remoteStreamRef,  pcRef, pendCandRef,callSessionRef,setCallState) => {
+  console.log("Cleaning up WebRTC resources");
+
+  
+  if (localStreamRef.current) {
+    localStreamRef.current.getTracks().forEach(track => {
+      track.stop();
+    });
+    localStreamRef.current = null;
+  }
+
+  
+  if (remoteStreamRef.current) {
+    remoteStreamRef.current.getTracks().forEach(track => {
+      track.stop();
+    });
+    remoteStreamRef.current = new MediaStream();
+  }
+
+
+  if (pcRef.current) {
+    pcRef.current.onicecandidate = null;
+    pcRef.current.ontrack = null;
+    pcRef.current.close();
+    pcRef.current = null;
+  }
+
+  pendCandRef.current = [];
+
+  
+  callSessionRef.current = null;
+
+  setCallState(Call_States.IDLE);
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
 export const getMetaOverRide = (chatId, myUserId, callSessionRef) => {
   const metaOveride = {
     conversationId: chatId,
@@ -44,11 +92,19 @@ export const initPeerConnection = (wsRef, remoteStreamRef, metaOveride) => {
   return pc;
 }; //createPeerConnection()
 
-export const getLocalMedia = async (localStreamRef) => {
+export const getLocalMedia = async (localStreamRef, callType) => {
+
+  const video_config = {
+    width: { ideal: 1280 },
+    height: { ideal: 720 },
+    frameRate: { ideal: 30 }
+  };
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: true,
-    video: false,
+    video: callType === Call_IntentType.VIDEO_CALL ? video_config : false,
   });
+
+
 
 
 

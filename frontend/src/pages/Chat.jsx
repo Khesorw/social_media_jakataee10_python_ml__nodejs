@@ -17,6 +17,7 @@ import {
   getLocalMedia,
   initPeerConnection,
   getMetaOverRide,
+  cleanupCall
 } from "../domain/message";
 import { nanoid } from "nanoid";
 
@@ -54,9 +55,7 @@ export default function Chat() {
 
     console.log("cleanup useEffect is being rendered after condion check");
 
-    callSessionRef.current = null;
-    setCallState(Call_States.IDLE);
-
+    cleanupCall(localStreamRef, remoteStreamRef, pcRef, pendCandRef, callSessionRef, setCallState);
     console.log("call Session is: ", callSessionRef);
     console.log("call state is ", callState);
   }, [callState]);
@@ -115,12 +114,12 @@ export default function Chat() {
 
         case "call_intent":
           console.log("It is call intent");
-          console.log(msg);
+          console.log('it is callintent msg ',msg);
           if (!callSessionRef.current) {
             const newCallSession = {
               callId: msg.meta.callId,
               otherUserId: msg.meta.senderId,
-              callType: Call_IntentType.AUDIO_CALL,
+              callType: msg.payload.callType === Call_IntentType.AUDIO_CALL? Call_IntentType.AUDIO_CALL : Call_IntentType.VIDEO_CALL,
               callState: Call_States.INCOMING,
             };
             console.log("setting new call session");
@@ -177,7 +176,9 @@ export default function Chat() {
                 getMetaOverRide(chatId, myUserId, callSessionRef),
               );
 
-              const stream = await getLocalMedia(localStreamRef);
+              const stream = await getLocalMedia(
+                localStreamRef,
+              callSessionRef.current.callType);
               stream.getTracks().forEach((track) => {
                 pcRef.current.addTrack(track, stream);
               });
@@ -188,7 +189,7 @@ export default function Chat() {
                 JSON.stringify(
                   MESSAGE(
                     MessageType.CALL_OFFER,
-                    o,
+                    offer,
                     getMetaOverRide(chatId, myUserId, callSessionRef),
                   ),
                 ),
@@ -201,14 +202,16 @@ export default function Chat() {
           console.log("offer type");
           console.log("offer from caller is: ", msg);
           console.log(getMetaOverRide(chatId, myUserId, callSessionRef));
+
+          console.log("call sessionREf is ", callSessionRef.current);
           pcRef.current ??= initPeerConnection(
             wsRef,
             remoteStreamRef,
             getMetaOverRide(chatId, myUserId, callSessionRef),
           );
           await pcRef.current.setRemoteDescription(msg.payload.sdp);
-
-          const stream = await getLocalMedia(localStreamRef);
+          console.log('checking the call offer callsion ', callSessionRef.current);
+          const stream = await getLocalMedia(localStreamRef,callSessionRef.current.callType);
           stream
             .getTracks()
             .forEach((track) => pcRef.current.addTrack(track, stream));
@@ -305,29 +308,37 @@ export default function Chat() {
   }; //handleSend()
 
   const handleVideo = () => {
-    setCallState(Call_States.OUTGOING);
-    const sessionOverrider = {
-      callId: nanoid(10), //unique callId with the length = 10
-      callState: Call_States.OUTGOING,
-      callType: Call_IntentType.AUDIO_CALL,
-      isCaller: true,
-    };
+    console.log("call state right now is ", callState);
+    if (callState === Call_States.IDLE) {
+    
+      const sessionOverrider = {
+        callId: nanoid(10), //unique callId with the length = 10
+        callState: Call_States.OUTGOING,
+        callType: Call_IntentType.VIDEO_CALL,
+        isCaller: true,
+      };
 
-    const MetaOveride = {
-      conversationId: chatId,
-      senderId: myUserId,
-      callId: sessionOverrider.callId,
-    };
+      const MetaOveride = {
+        conversationId: chatId,
+        senderId: myUserId,
+        callId: sessionOverrider.callId,
+      };
 
-    const videoMessage = MESSAGE(
-      MessageType.CALL_INTENT,
-      Call_IntentType.VIDEO_CALL,
-      MetaOveride,
-    );
-    wsRef.current?.send(JSON.stringify(videoMessage));
+      const videoMessage = MESSAGE(
+        MessageType.CALL_INTENT,
+        Call_IntentType.VIDEO_CALL,
+        MetaOveride,
+      );
+      wsRef.current?.send(JSON.stringify(videoMessage));
 
-    callSessionRef.current = sessionOverrider;
-    setCallState(Call_States.OUTGOING);
+      callSessionRef.current = sessionOverrider;
+      console.log('wrote new session for the video call ', callSessionRef.current);
+      console.log("now printing the sessionOverRider ", sessionOverrider);
+      setCallState(Call_States.OUTGOING);
+    }//end if
+    else {
+      console.log("already outgoing call state");
+    }
   };
 
   /**
@@ -390,6 +401,8 @@ export default function Chat() {
           conversationId={chatId}
           myUserId={myUserId}
           callSessionRef={callSessionRef}
+          remoteStreamRef={remoteStreamRef}
+          localStreamRef = {localStreamRef}
         />
       ) : (
         <div className="h-screen flex flex-col bg-gray-50">
