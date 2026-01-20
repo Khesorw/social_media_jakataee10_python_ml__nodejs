@@ -19,6 +19,12 @@ import {
   UserIcon,
 } from "@heroicons/react/24/solid";
 
+/**
+ *
+ * @param {*} param0
+ * @returns
+ */
+
 const ActiveCall = ({
   callState,
   setCallState,
@@ -26,18 +32,16 @@ const ActiveCall = ({
   conversationId,
   myUserId,
   callSessionRef,
-  remoteStreamRef,
   localStreamRef,
+  localVideoRef,
+  remoteVideoRef,
+  audioRef,
 }) => {
-
-
   const [isMuted, setIsMuted] = useState(false);
-  const audioRef = useRef(null);
-  const remoteVideoRef = useRef(null);
-  const localVideoRef = useRef(null);
 
   console.log(callState);
 
+  //hangup
   const handleHangup = () => {
     const metaOveride = {
       conversationId: conversationId,
@@ -51,6 +55,7 @@ const ActiveCall = ({
     );
 
     //local audio and ref cleanup
+    cleanupLocalVideoAndAudio();
 
     wsRef.current.send(JSON.stringify(hangupMessage));
     console.log("metaOver ride of activeCall ", metaOveride);
@@ -58,18 +63,18 @@ const ActiveCall = ({
   }; //hangup
 
   const cleanupLocalVideoAndAudio = () => {
-      if (audioRef.current) {
-        audioRef.current.srcObject = null;
-      }
+    if (audioRef.current) {
+      audioRef.current.srcObject = null;
+    }
 
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = null;
-      }
-      
-      if (remoteVideoRef.current.srcObject) {
-        remoteVideoRef.current.srcObject = null;
-      }
-  }
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = null;
+    }
+
+    if (remoteVideoRef.current?.srcObject) {
+      remoteVideoRef.current.srcObject = null;
+    }
+  };
 
   /**
    *
@@ -183,49 +188,32 @@ const ActiveCall = ({
     );
   }; //SimulateIncomingCall()
 
-  //attach local audio stream after callstate is set to active
-  useEffect(() => {
-    if (callState !== Call_States.ACTIVE) return;
-    if (!audioRef.current) return;
-    if (!remoteStreamRef.current) return;
+  //localMedia
+  // useEffect(() => {
 
-    audioRef.current.srcObject = remoteStreamRef.current;
+  //   if (!localVideoRef.current) return;
+  //   if (!localStreamRef.current) return;
 
-    audioRef.current
-      .play()
-      .catch((error) => console.log("Auto paly bocked ", error));
-  }, [callState]);
+  //   localVideoRef.current.srcObject = localStreamRef.current;
+  //   localVideoRef.current.muted = true;
+  //   localVideoRef.current.play().catch(() => { });
 
-  //attach localStreamRef video track
-  useEffect(() => {
-    if (!localVideoRef.current) return;
-    if (!localStreamRef?.current) return;
-
-
-    localVideoRef.current.srcObject = localStreamRef.current;
-    localVideoRef.current.muted = true;
-    localVideoRef.current.play().catch(() => { });
-
-  
-  }, [localVideoRef.current, localStreamRef.current]);
-
-  //attach remoteVideoRef
-  useEffect(() => {
-    if (!localVideoRef.current) return;
-    if (!localStreamRef?.current) return;
-
-    
-    remoteVideoRef.current.srcObject = remoteStreamRef.current;
-
-  }, [remoteVideoRef.current, remoteStreamRef.current]);
-
+  // })
 
   //handle mute
   const handleMute = () => {
-    setIsMuted(!isMuted);
-    localStreamRef.current?.getAudioTracks()
-      .forEach(track => track.enabled = !isMuted);
-  }
+    const newMute = !isMuted;
+
+    localStreamRef.current
+      ?.getAudioTracks()
+      .forEach((track) => {
+        (track.enabled = !newMute)
+      });
+
+    setIsMuted(newMute);
+
+    console.log(`🔇 audio ${newMute ? 'muted' : 'not mute'}`);
+  };
 
   return (
     <>
@@ -234,38 +222,40 @@ const ActiveCall = ({
       ) : (
         <div className="relative flex h-screen flex-col bg-gray-900 text-white">
           {/* Caller Info */}
+          {callSessionRef.current?.callType === Call_IntentType.VIDEO_CALL ? (
+            <>
+              <video
+                ref={remoteVideoRef}
+                autoPlay
+                playsInline
+                className="w-full h-full object-cover bg-black"
+              />
+              <video
+                ref={localVideoRef}
+                autoPlay
+                muted
+                playsInline
+                className="absolute bottom-4 right-4
+                     w-40 aspect-square object-cover rounded-lg bg-black"
+              />
+            </>
+          ) : (
+            <>
+              <audio ref={audioRef} autoPlay playsInline />
+            </>
+          )}
           <div className="flex flex-1 flex-col items-center justify-center">
             {/* Avatar */}
             <div className="mb-6 flex h-36 w-36 items-center justify-center rounded-full bg-gray-700">
               <UserIcon className="h-20 w-20 text-gray-300" />
             </div>
-            {callSessionRef.current?.callType === Call_IntentType.VIDEO_CALL ? (
-              <>
-                <video
-                  ref={remoteVideoRef}
-                  autoPlay
-                  playsInline
-                  className="w-full h-full object-cover bg-black"
-                />
-                <video
-                  ref={localVideoRef}
-                  autoPlay
-                  muted
-                  playsInline
-                    className="absolute bottom-4 right-4
-                     w-40 aspect-square object-cover rounded-lg bg-black"
-                />
-              </>
-            ) : (
-              <>
-                <audio ref={audioRef} autoPlay playsInline />
-              </>
-            )}
 
             <h2 className="text-2xl font-semibold">contactName</h2>
 
             <p className="mt-2 text-sm text-cyan-400">
-              {callSessionRef.current?.callType === "video" ? "Video Calling..." : "audio "}
+              {callSessionRef.current?.callType === "video"
+                ? "Video Calling..."
+                : "audio "}
             </p>
           </div>
 

@@ -17,7 +17,7 @@ import {
   getLocalMedia,
   initPeerConnection,
   getMetaOverRide,
-  cleanupCall
+  cleanupCall,
 } from "../domain/message";
 import { nanoid } from "nanoid";
 
@@ -32,13 +32,15 @@ export default function Chat() {
   const location = useLocation();
   const otherUserName = location.state?.otherUserName || "Unknown";
   const [callState, setCallState] = useState(Call_States.IDLE);
-  const [callSession, setCallSession] = useState(null);
   const callSessionRef = useRef(null);
   const pcRef = useRef(null);
   const localStreamRef = useRef(null);
   const remoteStreamRef = useRef(new MediaStream());
   const pendCandRef = useRef(null);
   const callStateRef = useRef(Call_States.IDLE);
+  const localVideoRef = useRef(null);
+  const remoteVideoRef = useRef(null);
+  const audioRef = useRef(null);
 
   const setNewCallState = (value) => {
     setCallState(value);
@@ -55,7 +57,14 @@ export default function Chat() {
 
     console.log("cleanup useEffect is being rendered after condion check");
 
-    cleanupCall(localStreamRef, remoteStreamRef, pcRef, pendCandRef, callSessionRef, setCallState);
+    cleanupCall(
+      localStreamRef,
+      remoteStreamRef,
+      pcRef,
+      pendCandRef,
+      callSessionRef,
+      setCallState,
+    );
     console.log("call Session is: ", callSessionRef);
     console.log("call state is ", callState);
   }, [callState]);
@@ -114,12 +123,15 @@ export default function Chat() {
 
         case "call_intent":
           console.log("It is call intent");
-          console.log('it is callintent msg ',msg);
+          console.log("it is callintent msg ", msg);
           if (!callSessionRef.current) {
             const newCallSession = {
               callId: msg.meta.callId,
               otherUserId: msg.meta.senderId,
-              callType: msg.payload.callType === Call_IntentType.AUDIO_CALL? Call_IntentType.AUDIO_CALL : Call_IntentType.VIDEO_CALL,
+              callType:
+                msg.payload.callType === Call_IntentType.AUDIO_CALL
+                  ? Call_IntentType.AUDIO_CALL
+                  : Call_IntentType.VIDEO_CALL,
               callState: Call_States.INCOMING,
             };
             console.log("setting new call session");
@@ -148,14 +160,14 @@ export default function Chat() {
             console.log("call id of msg.meta.callid is:  ", msg.meta.callId);
             console.log("call session is: ", callSessionRef);
 
-            //setNew callState based on users responds (accept call || reject call)
-            msg.payload.respond === RepondIncomingCall.ACCEPT
-              ? setNewCallState(Call_States.ACTIVE)
-              : setNewCallState(Call_States.ENDED);
             callSessionRef.current.callState =
               msg.payload.respond === RepondIncomingCall.ACCEPT
                 ? Call_States.ACTIVE
                 : Call_States.ENDED;
+            //setNew callState based on users responds (accept call || reject call)
+            msg.payload.respond === RepondIncomingCall.ACCEPT
+              ? setNewCallState(Call_States.ACTIVE)
+              : setNewCallState(Call_States.ENDED);
             console.log(
               "current call state after accept or reject " +
                 callState +
@@ -174,14 +186,21 @@ export default function Chat() {
                 wsRef,
                 remoteStreamRef,
                 getMetaOverRide(chatId, myUserId, callSessionRef),
+                remoteVideoRef,
+                audioRef,
               );
 
               const stream = await getLocalMedia(
                 localStreamRef,
-              callSessionRef.current.callType);
+                callSessionRef.current.callType,
+              );
               stream.getTracks().forEach((track) => {
                 pcRef.current.addTrack(track, stream);
               });
+
+              if (localVideoRef.current) {
+                localVideoRef.current.srcObject = stream;
+              }
 
               const offer = await pcRef.current.createOffer();
               pcRef.current.setLocalDescription(offer);
@@ -196,6 +215,7 @@ export default function Chat() {
               );
             } //if respond == accept
           } //end if
+
           break;
 
         case "call_offer":
@@ -208,15 +228,28 @@ export default function Chat() {
             wsRef,
             remoteStreamRef,
             getMetaOverRide(chatId, myUserId, callSessionRef),
+            remoteVideoRef,
+            audioRef,
           );
           await pcRef.current.setRemoteDescription(msg.payload.sdp);
-          console.log('checking the call offer callsion ', callSessionRef.current);
-          const stream = await getLocalMedia(localStreamRef,callSessionRef.current.callType);
+          console.log(
+            "checking the call offer callsion ",
+            callSessionRef.current,
+          );
+          const stream = await getLocalMedia(
+            localStreamRef,
+            callSessionRef.current.callType,
+          );
           stream
             .getTracks()
             .forEach((track) => pcRef.current.addTrack(track, stream));
 
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = stream;
+          }
+
           const answer = await pcRef.current.createAnswer();
+
           console.log("answer is ", answer);
           await pcRef.current.setLocalDescription(answer);
           wsRef.current.send(
@@ -237,7 +270,7 @@ export default function Chat() {
 
         case "call_answer":
           console.log("answer msessage type");
-          console.log(' hello prinintg answer from callee ', msg.payload.sdp);
+          console.log(" hello prinintg answer from callee ", msg.payload.sdp);
           await pcRef.current.setRemoteDescription(msg.payload.sdp);
           (pendCandRef.current || []).forEach((c) =>
             pcRef.current.addIceCandidate(c),
@@ -310,7 +343,6 @@ export default function Chat() {
   const handleVideo = () => {
     console.log("call state right now is ", callState);
     if (callState === Call_States.IDLE) {
-    
       const sessionOverrider = {
         callId: nanoid(10), //unique callId with the length = 10
         callState: Call_States.OUTGOING,
@@ -332,10 +364,13 @@ export default function Chat() {
       wsRef.current?.send(JSON.stringify(videoMessage));
 
       callSessionRef.current = sessionOverrider;
-      console.log('wrote new session for the video call ', callSessionRef.current);
+      console.log(
+        "wrote new session for the video call ",
+        callSessionRef.current,
+      );
       console.log("now printing the sessionOverRider ", sessionOverrider);
       setCallState(Call_States.OUTGOING);
-    }//end if
+    } //end if
     else {
       console.log("already outgoing call state");
     }
@@ -402,7 +437,10 @@ export default function Chat() {
           myUserId={myUserId}
           callSessionRef={callSessionRef}
           remoteStreamRef={remoteStreamRef}
-          localStreamRef = {localStreamRef}
+          localStreamRef={localStreamRef}
+          localVideoRef={localVideoRef}
+          remoteVideoRef={remoteVideoRef}
+          audioRef={audioRef}
         />
       ) : (
         <div className="h-screen flex flex-col bg-gray-50">

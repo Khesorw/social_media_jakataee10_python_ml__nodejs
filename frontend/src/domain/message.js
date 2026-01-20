@@ -1,23 +1,38 @@
 
-export const cleanupCall = (localStreamRef, remoteStreamRef,  pcRef, pendCandRef,callSessionRef,setCallState) => {
+
+
+/**
+ * 
+ * @param {*} localStreamRef 
+ * @param {*} remoteStreamRef 
+ * @param {*} pcRef 
+ * @param {*} pendCandRef 
+ * @param {*} callSessionRef 
+ * @param {*} setCallState 
+ */
+export const cleanupCall = (
+  localStreamRef,
+  remoteStreamRef,
+  pcRef,
+  pendCandRef,
+  callSessionRef,
+  setCallState,
+) => {
   console.log("Cleaning up WebRTC resources");
 
-  
   if (localStreamRef.current) {
-    localStreamRef.current.getTracks().forEach(track => {
+    localStreamRef.current.getTracks().forEach((track) => {
       track.stop();
     });
     localStreamRef.current = null;
   }
 
-  
   if (remoteStreamRef.current) {
-    remoteStreamRef.current.getTracks().forEach(track => {
+    remoteStreamRef.current.getTracks().forEach((track) => {
       track.stop();
     });
     remoteStreamRef.current = new MediaStream();
   }
-
 
   if (pcRef.current) {
     pcRef.current.onicecandidate = null;
@@ -28,23 +43,10 @@ export const cleanupCall = (localStreamRef, remoteStreamRef,  pcRef, pendCandRef
 
   pendCandRef.current = [];
 
-  
   callSessionRef.current = null;
 
   setCallState(Call_States.IDLE);
 };
-
-
-
-
-
-
-
-
-
-
-
-
 
 export const getMetaOverRide = (chatId, myUserId, callSessionRef) => {
   const metaOveride = {
@@ -53,11 +55,25 @@ export const getMetaOverRide = (chatId, myUserId, callSessionRef) => {
     callId: callSessionRef?.current.callId,
   };
 
-
   return metaOveride;
 };
 
-export const initPeerConnection = (wsRef, remoteStreamRef, metaOveride) => {
+/**
+ * 
+ * @param {*} wsRef 
+ * @param {*} remoteStreamRef 
+ * @param {*} metaOveride 
+ * @param {*} remoteVideoRef 
+ * @param {*} audioRef 
+ * @returns 
+ */
+export const initPeerConnection = (
+  wsRef,
+  remoteStreamRef,
+  metaOveride,
+  remoteVideoRef,
+  audioRef,
+) => {
   const rtcConfig = {
     //stun server
     iceServers: [
@@ -68,7 +84,7 @@ export const initPeerConnection = (wsRef, remoteStreamRef, metaOveride) => {
   }; //iceServers
 
   const pc = new RTCPeerConnection(rtcConfig);
-  
+
   pc.onicecandidate = (event) => {
     if (event.candidate) {
       const sdpCandidate = MESSAGE(
@@ -77,37 +93,51 @@ export const initPeerConnection = (wsRef, remoteStreamRef, metaOveride) => {
         metaOveride,
       );
 
-      console.log('sending the candidate to other peer: ' + event.candidate);
+      console.log("sending the candidate to other peer: " + event.candidate);
       wsRef.current?.send(JSON.stringify(sdpCandidate)); //send the offer through ws
     } //end if
   }; //oniceCandidate()
 
   pc.ontrack = (event) => {
-    console.log('getting or printing on track stram. ', event);
+    
+
+    console.log('🎥 ontrack fired');
+    
     event.streams[0].getTracks().forEach((track) => {
-      remoteStreamRef.current.addTrack(track);
+      if (!remoteStreamRef.current.getTracks().includes(track)) {
+        remoteStreamRef.current.addTrack(track);
+      }
     });
+
+    if (remoteVideoRef.current) {
+      
+      remoteVideoRef.current.srcObject = remoteStreamRef.current;
+    }
+
+    if (audioRef.current) {
+      audioRef.current.srcObject = remoteStreamRef.current;
+      audioRef.current.play().catch(() => { });
+    }
+
+    console.log('Remote tracks:  ', remoteStreamRef.current.getTracks().map(t=>t.kind));
+
   };
+
+
 
   return pc;
 }; //createPeerConnection()
 
 export const getLocalMedia = async (localStreamRef, callType) => {
-
   const video_config = {
     width: { ideal: 1280 },
     height: { ideal: 720 },
-    frameRate: { ideal: 30 }
+    frameRate: { ideal: 30 },
   };
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: true,
     video: callType === Call_IntentType.VIDEO_CALL ? video_config : false,
   });
-
-
-
-
-
 
   localStreamRef.current = stream;
 
