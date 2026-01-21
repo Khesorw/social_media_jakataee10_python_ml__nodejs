@@ -97,9 +97,11 @@ export default function Chat() {
   //webSocket Connection useEffect
   useEffect(() => {
     if (!myUserId) return;
-
     console.log("connected to websocket before");
-    const ws = new WebSocket(`ws://${window.location.host}/corechat/chat/${chatId}`);
+
+    //change ws protocol based on type of connection (http || https)
+    const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+    const ws = new WebSocket(`${wsProtocol}://${window.location.host}/corechat/chat/${chatId}`);
     wsRef.current = ws;
     console.log("connected to websocket after");
     ws.onmessage = async (e) => {

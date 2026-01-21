@@ -43,12 +43,28 @@ services:
       - postgres
     networks:
       - backend-net
+  
+  nginx:
+    image: nginx:alpine
+    container_name: dev_nginx
+    ports:
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - glassfish
+    networks:
+      - backend-net
+
 
 volumes:
   pgdata:
 
 networks:
   backend-net:
+
+
 
 
 
