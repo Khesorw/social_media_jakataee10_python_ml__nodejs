@@ -13,6 +13,7 @@ import com.app.corechat.business.chat.MessageService;
 import com.app.corechat.business.chat.ParticipantConversationFacade;
 import com.app.corechat.business.user.UserFecade;
 import com.app.corechat.entities.Message;
+import com.app.corechat.filter.WebSocketConfigurator;
 
 import jakarta.ejb.EJB;
 import jakarta.json.Json;
@@ -28,7 +29,10 @@ import jakarta.websocket.Session;
 import jakarta.websocket.server.PathParam;
 import jakarta.websocket.server.ServerEndpoint;
 
-@ServerEndpoint("/chat/{chatId}")
+@ServerEndpoint(value = "/chat/{chatId}",
+        configurator = WebSocketConfigurator.class
+            
+)
 public class Chat {
 
     private static final Logger LOG = Logger.getLogger(Chat.class.getName());

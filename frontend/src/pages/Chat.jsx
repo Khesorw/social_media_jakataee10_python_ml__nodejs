@@ -99,7 +99,7 @@ export default function Chat() {
     if (!myUserId) return;
 
     console.log("connected to websocket before");
-    const ws = new WebSocket(`ws://localhost:8080/corechat/chat/${chatId}`);
+    const ws = new WebSocket(`ws://${window.location.host}/corechat/chat/${chatId}`);
     wsRef.current = ws;
     console.log("connected to websocket after");
     ws.onmessage = async (e) => {

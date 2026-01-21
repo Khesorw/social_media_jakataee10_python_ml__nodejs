@@ -32,8 +32,8 @@ services:
     image: custom-glassfish:1.0
     container_name: dev_glassfish
     ports:
-      - "8080:8080"
-      - "4848:4848"
+      - "0.0.0.0:8080:8080"
+      - "0.0.0.0:4848:4848"
     environment:
       - JVM_ARGS=-Xms512m -Xmx1024m
     volumes:
