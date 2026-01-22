@@ -29,6 +29,9 @@ services:
       - backend-net
 
   glassfish:
+    build:
+      context: ./glassfish-build
+      dockerfile: Dockerfile
     image: custom-glassfish:1.0
     container_name: dev_glassfish
     ports:
