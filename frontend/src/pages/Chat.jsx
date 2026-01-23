@@ -22,6 +22,7 @@ import {
 import { nanoid } from "nanoid";
 
 import ActiveCall from "./audio_video_call_component/ActiveCall";
+import OutgoingCall from "../pages/audio_video_call_component/OutgoingCall";
 
 export default function Chat() {
   const navigate = useNavigate();
@@ -67,7 +68,7 @@ export default function Chat() {
     );
     console.log("call Session is: ", callSessionRef);
     console.log("call state is ", callState);
-  }, [callState]);
+  }, [callState]); //end of cleanupCallState
 
   console.log(chatId);
   const wsRef = useRef(null);
@@ -101,7 +102,9 @@ export default function Chat() {
 
     //change ws protocol based on type of connection (http || https)
     const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
-    const ws = new WebSocket(`${wsProtocol}://${window.location.host}/corechat/chat/${chatId}`);
+    const ws = new WebSocket(
+      `${wsProtocol}://${window.location.host}/corechat/chat/${chatId}`,
+    );
     wsRef.current = ws;
     console.log("connected to websocket after");
     ws.onmessage = async (e) => {
@@ -428,101 +431,120 @@ export default function Chat() {
   }; //handleAudioCall()
   //callState, setCallState, wsRef
 
+  // 1️⃣ OUTGOING
+  if (callState === Call_States.OUTGOING) {
+    return (
+      <OutgoingCall
+        callState={callState}
+        setCallState={setCallState}
+        wsRef={wsRef}
+        conversationId={chatId}
+        myUserId={myUserId}
+        callSessionRef={callSessionRef}
+        otherUserName={otherUserName}
+      />
+    );
+  }
+
+  // 2️⃣ ACTIVE (incoming / connected)
+  if (ActiveCallState.has(callState)) {
+    return (
+      <ActiveCall
+        callState={callState}
+        setCallState={setCallState}
+        wsRef={wsRef}
+        conversationId={chatId}
+        myUserId={myUserId}
+        callSessionRef={callSessionRef}
+        remoteStreamRef={remoteStreamRef}
+        localStreamRef={localStreamRef}
+        localVideoRef={localVideoRef}
+        remoteVideoRef={remoteVideoRef}
+        audioRef={audioRef}
+        otherUserName={otherUserName}
+      />
+    );
+  }
+
   return (
     <>
-      {ActiveCallState.has(callState) ? (
-        <ActiveCall
-          callState={callState}
-          setCallState={setCallState}
-          wsRef={wsRef}
-          conversationId={chatId}
-          myUserId={myUserId}
-          callSessionRef={callSessionRef}
-          remoteStreamRef={remoteStreamRef}
-          localStreamRef={localStreamRef}
-          localVideoRef={localVideoRef}
-          remoteVideoRef={remoteVideoRef}
-          audioRef={audioRef}
-        />
-      ) : (
-        <div className="h-screen flex flex-col bg-gray-50">
-          {/* Header */}
-          <header className="flex items-center gap-3 px-4 py-3 bg-white border-b">
-            <button onClick={() => navigate("/feed")} className="text-xl">
-              <ArrowLeftIcon className="w-5 h-5" />
+      <div className="h-screen flex flex-col bg-gray-50">
+        {/* Header */}
+        <header className="flex items-center gap-3 px-4 py-3 bg-white border-b">
+          <button onClick={() => navigate("/feed")} className="text-xl">
+            <ArrowLeftIcon className="w-5 h-5" />
+          </button>
+          <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold">
+            {otherUserName.slice(0, 2).toUpperCase()}
+          </div>
+
+          <div className="flex-1">
+            <h1 className="font-medium text-gray-900">
+              {otherUserName.toUpperCase()}
+            </h1>
+          </div>
+          <div className="flex items-center gap-3 ml-4">
+            <button
+              disabled={callState !== Call_States.IDLE}
+              onClick={handleAudio}
+            >
+              {" "}
+              <PhoneIcon className="w-6 h-6" />{" "}
             </button>
-            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold">
-              {otherUserName.slice(0, 2).toUpperCase()}
-            </div>
+            <button
+              disabled={callState !== Call_States.IDLE}
+              onClick={handleVideo}
+            >
+              {" "}
+              <VideoCameraIcon className="w-6 h-6 mr-3" />{" "}
+            </button>
+          </div>
+        </header>
 
-            <div className="flex-1">
-              <h1 className="font-medium text-gray-900">
-                {otherUserName.toUpperCase()}
-              </h1>
-            </div>
-            <div className="flex items-center gap-3 ml-4">
-              <button
-                disabled={callState !== Call_States.IDLE}
-                onClick={handleAudio}
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+          {messages
+            .filter((msg) => msg.text !== "First Message")
+            .map((msg, i) => (
+              <div
+                key={msg.id ?? i}
+                className={`flex ${
+                  msg.sender === "me" ? "justify-end" : "justify-start"
+                }`}
               >
-                {" "}
-                <PhoneIcon className="w-6 h-6" />{" "}
-              </button>
-              <button
-                disabled={callState !== Call_States.IDLE}
-                onClick={handleVideo}
-              >
-                {" "}
-                <VideoCameraIcon className="w-6 h-6 mr-3" />{" "}
-              </button>
-            </div>
-          </header>
-
-          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-            {messages
-              .filter((msg) => msg.text !== "First Message")
-              .map((msg, i) => (
                 <div
-                  key={msg.id ?? i}
-                  className={`flex ${
-                    msg.sender === "me" ? "justify-end" : "justify-start"
+                  className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm ${
+                    msg.sender === "me"
+                      ? "bg-indigo-600 text-white rounded-br-sm"
+                      : "bg-white text-gray-900 rounded-bl-sm border"
                   }`}
                 >
-                  <div
-                    className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm ${
-                      msg.sender === "me"
-                        ? "bg-indigo-600 text-white rounded-br-sm"
-                        : "bg-white text-gray-900 rounded-bl-sm border"
-                    }`}
-                  >
-                    {msg.text}
-                  </div>
+                  {msg.text}
                 </div>
-              ))}
-          </div>
-
-          {/* Input */}
-          <div className="px-3 py-2 bg-white border-t flex items-center gap-2">
-            <button className="text-xl text-gray-500">+</button>
-
-            <input
-              type="text"
-              placeholder="Type a message"
-              className="flex-1 border rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            />
-
-            <button
-              onClick={handleSend}
-              className="text-indigo-600 font-semibold"
-            >
-              <PaperAirplaneIcon className="w-6 h-6" />
-            </button>
-          </div>
+              </div>
+            ))}
         </div>
-      )}
+
+        {/* Input */}
+        <div className="px-3 py-2 bg-white border-t flex items-center gap-2">
+          <button className="text-xl text-gray-500">+</button>
+
+          <input
+            type="text"
+            placeholder="Type a message"
+            className="flex-1 border rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+          />
+
+          <button
+            onClick={handleSend}
+            className="text-indigo-600 font-semibold"
+          >
+            <PaperAirplaneIcon className="w-6 h-6" />
+          </button>
+        </div>
+      </div>
     </>
   );
 }

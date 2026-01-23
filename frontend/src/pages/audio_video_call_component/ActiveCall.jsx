@@ -36,6 +36,7 @@ const ActiveCall = ({
   localVideoRef,
   remoteVideoRef,
   audioRef,
+  otherUserName,
 }) => {
   const [isMuted, setIsMuted] = useState(false);
 
@@ -102,6 +103,7 @@ const ActiveCall = ({
           RepondIncomingCall={RepondIncomingCall}
           conversationId={conversationId}
           myUserId={myUserId}
+          otherUserName={otherUserName}
         />
       ) : (
         <div className="relative h-screen w-screen overflow-hidden bg-gray-900 text-white">

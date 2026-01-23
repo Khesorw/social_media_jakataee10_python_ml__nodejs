@@ -1,19 +1,20 @@
   
 import { PhoneIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import  { useEffect, useRef} from "react";
+import { useEffect, useRef } from "react";
+import incomingcall from '../../assets/audios/incoming.mp3';
 
   
   /**
    *
    * @returns Incoming (accept/reject) call component
    */
-  const SimulateIncomingCall = ({wsRef, Call_States, setCallState, MESSAGE, callSessionRef, MessageType, RepondIncomingCall, conversationId, myUserId}) => {
+  const SimulateIncomingCall = ({wsRef, Call_States, setCallState, MESSAGE, callSessionRef, MessageType, RepondIncomingCall, conversationId, myUserId,otherUserName}) => {
     const audioRef = useRef(null);
     const audioTimer = useRef(null);
 
     useEffect(() => {
       const ringtone = new Audio(
-        "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+        incomingcall
       );
       ringtone.loop = true;
       audioRef.current = ringtone;
@@ -22,9 +23,11 @@ import  { useEffect, useRef} from "react";
       });
 
       audioTimer.current = setTimeout(() => {
-        stopAudio();
-        console.log("Stopped ringtone");
+        onReject();
+     
       }, 40000);
+
+      return () => stopAudio();
     }, []);
 
     const stopAudio = () => {
@@ -92,7 +95,7 @@ import  { useEffect, useRef} from "react";
       <div className="h-screen flex flex-col items-center justify-center bg-gray-900 text-white gap-6">
         <h1 className="text-2xl font-semibold">Incoming Call</h1>
 
-        <p className="text-lg opacity-90">callerName</p>
+        <p className="text-lg opacity-90">{otherUserName}</p>
 
         <div className="flex gap-10 mt-6">
           <button
